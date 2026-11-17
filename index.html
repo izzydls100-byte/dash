@@ -15,7 +15,7 @@
       height: 100vh;
       font-family: monospace;
       color: white;
-      touch-action: none; /* Prevents default mobile browser scrolling/zooming gestures */
+      touch-action: none;
     }
     .hud {
       display: flex;
@@ -166,6 +166,7 @@
     let coinCount = 0;
     let gameSpeed = 5;
     let isPlaying = false;
+    let animFrameId = null; // Tracks animation loop for safe restarting
 
     let isRamming = false;
     let ramPhase = "none";
@@ -173,7 +174,6 @@
 
     let runCycle = 0;
 
-    // Touch gesture tracking variables
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -204,7 +204,6 @@
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
 
-    // --- KEYBOARD CONTROLS ---
     document.addEventListener("keydown", (e) => {
       if (!isPlaying && !isRamming && (e.code === "Space" || e.code === "Enter")) {
         startGame();
@@ -227,7 +226,6 @@
       player.x = lanes[currentLane];
     });
 
-    // --- TOUCH & SWIPE CONTROLS ---
     gameWrapper.addEventListener("touchstart", (e) => {
       if (!isPlaying && !isRamming) {
         startGame();
@@ -245,24 +243,23 @@
       const touch = e.changedTouches[0];
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
-      const minSwipeDistance = 30; // Minimum pixels to count as a swipe
+      const minSwipeDistance = 30;
 
-      // Check if horizontal or vertical swipe was greater
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         if (Math.abs(deltaX) > minSwipeDistance) {
           if (deltaX < 0 && currentLane > 0) {
-            currentLane--; // Swipe Left
+            currentLane--;
           } else if (deltaX > 0 && currentLane < 2) {
-            currentLane++; // Swipe Right
+            currentLane++;
           }
         }
       } else {
         if (Math.abs(deltaY) > minSwipeDistance) {
           if (deltaY < 0 && player.state === "running") {
-            player.state = "jumping"; // Swipe Up
+            player.state = "jumping";
             player.actionTimer = 28;
           } else if (deltaY > 0 && player.state === "running") {
-            player.state = "sliding"; // Swipe Down
+            player.state = "sliding";
             player.actionTimer = 28;
           }
         }
@@ -272,6 +269,11 @@
     }, { passive: false });
 
     function startGame() {
+      // Cancel any active animation loops so they don't stack up
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+      }
+
       tutorialScreen.style.display = "none";
       gameOverScreen.style.display = "none";
       
@@ -286,10 +288,13 @@
       ramPhase = "none";
       ramTimer = 0;
 
+      // Reset Player properties explicitly
       player.x = lanes[currentLane];
-      player.state = "running";
+      player.y = 400;
       player.width = 36;
       player.height = 36;
+      player.state = "running";
+      player.actionTimer = 0;
       player.hits = 0;
       player.invincibleTimer = 0;
       player.recoveryTimer = 0;
@@ -494,7 +499,7 @@
           }
         }
 
-        requestAnimationFrame(update);
+        animFrameId = requestAnimationFrame(update);
         return;
       }
 
@@ -586,7 +591,7 @@
       scoreEl.innerText = Math.floor(score / 10);
       gameSpeed = 5 + Math.floor(score / 600);
 
-      requestAnimationFrame(update);
+      animFrameId = requestAnimationFrame(update);
     }
 
     function handleObstacleHit() {
