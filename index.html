@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Danger Dash - Mobile Touch Edition</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111827;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: monospace;
+      color: white;
+      touch-action: none; /* Prevents default mobile browser scrolling/zooming gestures */
+    }
+    .hud {
+      display: flex;
+      gap: 25px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .game-wrapper {
+      position: relative;
+      width: 360px;
+      height: 520px;
+      overflow: hidden;
+    }
+    canvas {
+      background-color: #1f2937;
+      border: 3px solid #4b5563;
+      display: block;
+    }
+    #tutorialScreen, #gameOverScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(17, 24, 39, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      border: 3px solid #6b7280;
+      z-index: 10;
+    }
+    #gameOverScreen {
+      display: none;
+    }
+    .legend {
+      width: 100%;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+    }
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border: 2px solid white;
+      flex-shrink: 0;
+    }
+    button {
+      background-color: #eab308;
+      color: #111827;
+      border: none;
+      padding: 14px 28px;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #fde047;
+    }
+    .controls {
+      margin-top: 12px;
+      color: #9ca3af;
+      font-size: 13px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hud">
+    <div>DISTANCE: <span id="score">0</span></div>
+    <div>COINS: <span id="coins">0</span></div>
+    <div>DANGER: <span id="danger" style="color: #22c55e;">SAFE</span></div>
+  </div>
+
+  <div class="game-wrapper" id="gameWrapper">
+    <canvas id="gameCanvas" width="360" height="520"></canvas>
+
+    <!-- TUTORIAL OVERLAY -->
+    <div id="tutorialScreen">
+      <h2 style="margin: 0;">HOW TO PLAY</h2>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="swatch" style="background: #1e293b;"></div>
+          <span><strong>SUIT AGENT</strong> = You</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background: #ef4444;"></div>
+          <span><strong>RED</strong> = Swipe Up to Jump</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background: #22c55e; height: 14px;"></div>
+          <span><strong>GREEN</strong> = Swipe Down to Slide</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background: #3b82f6;"></div>
+          <span><strong>BLUE CAR</strong> = Chaser (Avoid!)</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background: #06b6d4; width: 18px; height: 18px;"></div>
+          <span><strong>CYAN</strong> = Coin (+1)</span>
+        </div>
+      </div>
+      <button id="startBtn">START GAME</button>
+    </div>
+
+    <!-- GAME OVER OVERLAY -->
+    <div id="gameOverScreen">
+      <h2 style="color: #3b82f6; margin-bottom: 10px;">BLOWN AWAY!</h2>
+      <p style="margin-bottom: 20px; text-align: center;">The car launched you off the screen.</p>
+      <button id="restartBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    [PC] Arrows to Move / Jump / Slide<br>
+    [MOBILE/TABLET] Swipe Left/Right, Up, or Down on screen!
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const coinsEl = document.getElementById("coins");
+    const dangerEl = document.getElementById("danger");
+
+    const tutorialScreen = document.getElementById("tutorialScreen");
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const gameWrapper = document.getElementById("gameWrapper");
+
+    const lanes = [60, 180, 300];
+    let currentLane = 1;
+    let score = 0;
+    let coinCount = 0;
+    let gameSpeed = 5;
+    let isPlaying = false;
+
+    let isRamming = false;
+    let ramPhase = "none";
+    let ramTimer = 0;
+
+    let runCycle = 0;
+
+    // Touch gesture tracking variables
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const player = {
+      x: lanes[currentLane],
+      y: 400,
+      width: 36,
+      height: 36,
+      state: "running",
+      actionTimer: 0,
+      hits: 0,
+      invincibleTimer: 0,
+      recoveryTimer: 0,
+      vy: 0
+    };
+
+    const chaser = {
+      x: lanes[currentLane],
+      y: 495,
+      targetY: 495,
+      width: 48,
+      height: 60
+    };
+
+    let boxes = [];
+    let spawnTimer = 0;
+
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", startGame);
+
+    // --- KEYBOARD CONTROLS ---
+    document.addEventListener("keydown", (e) => {
+      if (!isPlaying && !isRamming && (e.code === "Space" || e.code === "Enter")) {
+        startGame();
+        return;
+      }
+
+      if (!isPlaying || isRamming) return;
+
+      if (e.key === "ArrowLeft" && currentLane > 0) {
+        currentLane--;
+      } else if (e.key === "ArrowRight" && currentLane < 2) {
+        currentLane++;
+      } else if (e.key === "ArrowUp" && player.state === "running") {
+        player.state = "jumping";
+        player.actionTimer = 28;
+      } else if (e.key === "ArrowDown" && player.state === "running") {
+        player.state = "sliding";
+        player.actionTimer = 28;
+      }
+      player.x = lanes[currentLane];
+    });
+
+    // --- TOUCH & SWIPE CONTROLS ---
+    gameWrapper.addEventListener("touchstart", (e) => {
+      if (!isPlaying && !isRamming) {
+        startGame();
+        return;
+      }
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      e.preventDefault();
+    }, { passive: false });
+
+    gameWrapper.addEventListener("touchend", (e) => {
+      if (!isPlaying || isRamming) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      const minSwipeDistance = 30; // Minimum pixels to count as a swipe
+
+      // Check if horizontal or vertical swipe was greater
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (Math.abs(deltaX) > minSwipeDistance) {
+          if (deltaX < 0 && currentLane > 0) {
+            currentLane--; // Swipe Left
+          } else if (deltaX > 0 && currentLane < 2) {
+            currentLane++; // Swipe Right
+          }
+        }
+      } else {
+        if (Math.abs(deltaY) > minSwipeDistance) {
+          if (deltaY < 0 && player.state === "running") {
+            player.state = "jumping"; // Swipe Up
+            player.actionTimer = 28;
+          } else if (deltaY > 0 && player.state === "running") {
+            player.state = "sliding"; // Swipe Down
+            player.actionTimer = 28;
+          }
+        }
+      }
+      player.x = lanes[currentLane];
+      e.preventDefault();
+    }, { passive: false });
+
+    function startGame() {
+      tutorialScreen.style.display = "none";
+      gameOverScreen.style.display = "none";
+      
+      boxes = [];
+      score = 0;
+      coinCount = 0;
+      gameSpeed = 5;
+      currentLane = 1;
+      runCycle = 0;
+      
+      isRamming = false;
+      ramPhase = "none";
+      ramTimer = 0;
+
+      player.x = lanes[currentLane];
+      player.state = "running";
+      player.width = 36;
+      player.height = 36;
+      player.hits = 0;
+      player.invincibleTimer = 0;
+      player.recoveryTimer = 0;
+      player.vy = 0;
+      
+      chaser.x = lanes[currentLane];
+      chaser.y = 495;
+      chaser.targetY = 495;
+      
+      coinsEl.innerText = "0";
+      scoreEl.innerText = "0";
+      dangerEl.innerText = "SAFE";
+      dangerEl.style.color = "#22c55e";
+      
+      isPlaying = true;
+      update();
+    }
+
+    function drawBox(x, y, w, h, fillColor, borderColor) {
+      ctx.fillStyle = fillColor;
+      ctx.fillRect(x - w / 2, y - h / 2, w, h);
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+    }
+
+    function drawTopDownRunner(x, y, state, isInvincible, cycle) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      if (state === "jumping") {
+        ctx.scale(1.25, 1.25);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.beginPath();
+        ctx.ellipse(0, 8, 16, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const flashWhite = isInvincible && Math.floor(Date.now() / 60) % 2 === 0;
+      const suitColor = flashWhite ? "#ffffff" : "#1e293b";
+      const suitOutline = flashWhite ? "#ef4444" : "#475569";
+      const pantsColor = "#0f172a";
+      const shoeColor = "#000000";
+      const hairColor = "#111827";
+      const skinColor = "#fbbf24";
+
+      const stride = state === "running" ? Math.sin(cycle) * 11 : 0;
+
+      if (state === "sliding") {
+        ctx.fillStyle = pantsColor;
+        ctx.fillRect(-10, -24, 8, 22);
+        ctx.fillRect(2, -20, 8, 18);
+        ctx.fillStyle = shoeColor;
+        ctx.fillRect(-10, -28, 8, 5);
+        ctx.fillRect(2, -24, 8, 5);
+
+        ctx.fillStyle = suitColor;
+        ctx.fillRect(-15, -4, 30, 18);
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(0, 14, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = hairColor;
+        ctx.beginPath();
+        ctx.arc(0, 15, 8, 0, Math.PI);
+        ctx.fill();
+        ctx.restore();
+        return;
+      }
+
+      ctx.fillStyle = pantsColor;
+      ctx.fillRect(-11, -6 + stride, 8, 16);
+      ctx.fillStyle = shoeColor;
+      ctx.fillRect(-11, (stride < 0 ? -9 + stride : 8 + stride), 8, 5);
+
+      ctx.fillStyle = pantsColor;
+      ctx.fillRect(3, -6 - stride, 8, 16);
+      ctx.fillStyle = shoeColor;
+      ctx.fillRect(3, (-stride < 0 ? -9 - stride : 8 - stride), 8, 5);
+
+      ctx.fillStyle = suitColor;
+      ctx.fillRect(-20, -6 - stride * 0.7, 6, 14);
+      ctx.fillStyle = skinColor;
+      ctx.fillRect(-19, -8 - stride * 0.7, 4, 4);
+
+      ctx.fillStyle = suitColor;
+      ctx.fillRect(14, -6 + stride * 0.7, 6, 14);
+      ctx.fillStyle = skinColor;
+      ctx.fillRect(15, -8 + stride * 0.7, 4, 4);
+
+      ctx.fillStyle = suitColor;
+      ctx.strokeStyle = suitOutline;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 16, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(-6, -8);
+      ctx.lineTo(6, -8);
+      ctx.lineTo(0, -3);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(-1.5, -10, 3, 5);
+
+      ctx.fillStyle = skinColor;
+      ctx.beginPath();
+      ctx.arc(0, -3, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = hairColor;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8.5, -0.2, Math.PI + 0.2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawCar(x, y, w, h, isBoosting = false) {
+      const left = x - w / 2;
+      const top = y - h / 2;
+
+      if (isBoosting) {
+        ctx.fillStyle = "#f97316";
+        ctx.fillRect(left + 8, top + h, w - 16, 24);
+        ctx.fillStyle = "#fde047";
+        ctx.fillRect(left + 14, top + h, w - 28, 14);
+      }
+
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(left - 6, top + 8, 6, 14);
+      ctx.fillRect(left + w, top + 8, 6, 14);
+      ctx.fillRect(left - 6, top + h - 22, 6, 14);
+      ctx.fillRect(left + w, top + h - 22, 6, 14);
+
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#bfdbfe";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(left, top, w, h);
+
+      ctx.fillStyle = "#1e3a8a";
+      ctx.fillRect(left + 6, top + 14, w - 12, 18);
+
+      ctx.fillStyle = "#fde047";
+      ctx.fillRect(left + 4, top + 2, 8, 4);
+      ctx.fillRect(left + w - 12, top + 2, 8, 4);
+    }
+
+    function update() {
+      if (!isPlaying && !isRamming) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Lane Tracks
+      ctx.strokeStyle = "#374151";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(120, 0, 120, canvas.height);
+
+      if (isRamming) {
+        for (let b of boxes) {
+          if (b.type === "low") drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
+          else if (b.type === "high") drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
+          else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
+        }
+
+        chaser.x += (player.x - chaser.x) * 0.2;
+
+        if (ramPhase === "reversing") {
+          chaser.y += 2.5;
+          ramTimer--;
+          drawTopDownRunner(player.x, player.y, "running", true, 0);
+          drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
+
+          if (ramTimer <= 0) {
+            ramPhase = "boosting";
+          }
+        } else if (ramPhase === "boosting") {
+          chaser.y -= 20;
+          drawCar(chaser.x, chaser.y, chaser.width, chaser.height, true);
+          drawTopDownRunner(player.x, player.y, "running", true, 0);
+
+          if (chaser.y <= player.y + 15) {
+            ramPhase = "launched";
+            player.vy = -18;
+          }
+        } else if (ramPhase === "launched") {
+          player.y += player.vy;
+          chaser.y += player.vy;
+          
+          drawTopDownRunner(player.x, player.y, "jumping", true, 0);
+          drawCar(chaser.x, chaser.y, chaser.width, chaser.height, true);
+
+          if (player.y < -60) {
+            isRamming = false;
+            gameOverScreen.style.display = "flex";
+            return;
+          }
+        }
+
+        requestAnimationFrame(update);
+        return;
+      }
+
+      if (player.invincibleTimer > 0) {
+        player.invincibleTimer--;
+      }
+
+      if (player.hits === 1) {
+        player.recoveryTimer--;
+        if (player.recoveryTimer <= 0) {
+          player.hits = 0;
+          chaser.targetY = 495;
+          dangerEl.innerText = "SAFE";
+          dangerEl.style.color = "#22c55e";
+        }
+      }
+
+      chaser.x += (player.x - chaser.x) * 0.15;
+      chaser.y += (chaser.targetY - chaser.y) * 0.1;
+
+      if (player.state === "jumping") {
+        player.actionTimer--;
+        if (player.actionTimer <= 0) player.state = "running";
+      } else if (player.state === "sliding") {
+        player.actionTimer--;
+        if (player.actionTimer <= 0) player.state = "running";
+      }
+
+      runCycle += 0.22 + (gameSpeed * 0.015);
+
+      drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle);
+      drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
+
+      spawnTimer++;
+      if (spawnTimer > 55) {
+        const randomLane = Math.floor(Math.random() * 3);
+        const roll = Math.random();
+
+        if (roll < 0.4) {
+          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 46, h: 46, type: "low" });
+        } else if (roll < 0.75) {
+          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 52, h: 30, type: "high" });
+        } else {
+          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 24, h: 24, type: "coin" });
+        }
+        spawnTimer = 0;
+      }
+
+      for (let i = boxes.length - 1; i >= 0; i--) {
+        let b = boxes[i];
+        b.y += gameSpeed;
+
+        if (b.type === "low") {
+          drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
+        } else if (b.type === "high") {
+          drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
+        } else if (b.type === "coin") {
+          drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
+        }
+
+        const sameLane = b.lane === currentLane;
+        const hitY = Math.abs(b.y - player.y) < (player.height / 2 + b.h / 2 - 6);
+
+        if (sameLane && hitY) {
+          if (b.type === "coin") {
+            coinCount++;
+            coinsEl.innerText = coinCount;
+            boxes.splice(i, 1);
+            continue;
+          }
+
+          const dodgedLow = b.type === "low" && player.state === "jumping";
+          const dodgedHigh = b.type === "high" && player.state === "sliding";
+
+          if (!dodgedLow && !dodgedHigh && player.invincibleTimer === 0) {
+            boxes.splice(i, 1);
+            handleObstacleHit();
+            if (!isPlaying && !isRamming) return;
+            continue;
+          }
+        }
+
+        if (b.y > canvas.height + 50) {
+          boxes.splice(i, 1);
+        }
+      }
+
+      score++;
+      scoreEl.innerText = Math.floor(score / 10);
+      gameSpeed = 5 + Math.floor(score / 600);
+
+      requestAnimationFrame(update);
+    }
+
+    function handleObstacleHit() {
+      player.hits++;
+      player.invincibleTimer = 45;
+
+      if (player.hits === 1) {
+        chaser.targetY = player.y + 42;
+        player.recoveryTimer = 300;
+        dangerEl.innerText = "CLOSE!";
+        dangerEl.style.color = "#ef4444";
+      } else if (player.hits >= 2) {
+        isPlaying = false;
+        isRamming = true;
+        ramPhase = "reversing";
+        ramTimer = 22;
+      }
+    }
+  </script>
+</body>
+</html>
