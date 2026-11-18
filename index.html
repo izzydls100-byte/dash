@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Danger Dash - Mobile Touch Edition</title>
+  <title>Danger Dash - Cityscape Edition</title>
   <style>
     body {
       margin: 0;
@@ -55,20 +55,20 @@
     }
     .legend {
       width: 100%;
-      margin: 20px 0;
+      margin: 15px 0;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
     .legend-item {
       display: flex;
       align-items: center;
       gap: 14px;
-      font-size: 14px;
+      font-size: 13px;
     }
     .swatch {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border: 2px solid white;
       flex-shrink: 0;
     }
@@ -76,7 +76,7 @@
       background-color: #eab308;
       color: #111827;
       border: none;
-      padding: 14px 28px;
+      padding: 12px 24px;
       font-family: monospace;
       font-size: 16px;
       font-weight: bold;
@@ -106,9 +106,9 @@
   <div class="game-wrapper" id="gameWrapper">
     <canvas id="gameCanvas" width="360" height="520"></canvas>
 
-    <!-- TUTORIAL OVERLAY -->
+    <!-- TUTORIAL SCREEN -->
     <div id="tutorialScreen">
-      <h2 style="margin: 0;">HOW TO PLAY</h2>
+      <h2 style="margin: 0 0 10px 0;">HOW TO PLAY</h2>
       <div class="legend">
         <div class="legend-item">
           <div class="swatch" style="background: #1e293b;"></div>
@@ -119,25 +119,25 @@
           <span><strong>RED</strong> = Swipe Up to Jump</span>
         </div>
         <div class="legend-item">
-          <div class="swatch" style="background: #22c55e; height: 14px;"></div>
+          <div class="swatch" style="background: #22c55e; height: 10px;"></div>
           <span><strong>GREEN</strong> = Swipe Down to Slide</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background: #475569; height: 24px;"></div>
+          <span><strong>ROOFTOP</strong> = Switch Lanes!</span>
         </div>
         <div class="legend-item">
           <div class="swatch" style="background: #3b82f6;"></div>
           <span><strong>BLUE CAR</strong> = Chaser (Avoid!)</span>
         </div>
-        <div class="legend-item">
-          <div class="swatch" style="background: #06b6d4; width: 18px; height: 18px;"></div>
-          <span><strong>CYAN</strong> = Coin (+1)</span>
-        </div>
       </div>
       <button id="startBtn">START GAME</button>
     </div>
 
-    <!-- GAME OVER OVERLAY -->
+    <!-- GAME OVER SCREEN -->
     <div id="gameOverScreen">
       <h2 style="color: #3b82f6; margin-bottom: 10px;">BLOWN AWAY!</h2>
-      <p style="margin-bottom: 20px; text-align: center;">The car launched you off the screen.</p>
+      <p style="margin-bottom: 20px; text-align: center; color: #9ca3af;">The car launched you off the screen.</p>
       <button id="restartBtn">PLAY AGAIN</button>
     </div>
   </div>
@@ -166,13 +166,13 @@
     let coinCount = 0;
     let gameSpeed = 5;
     let isPlaying = false;
-    let animFrameId = null; // Tracks animation loop for safe restarting
+    let animFrameId = null;
 
     let isRamming = false;
     let ramPhase = "none";
     let ramTimer = 0;
-
     let runCycle = 0;
+    let backgroundScroll = 0;
 
     let touchStartX = 0;
     let touchStartY = 0;
@@ -204,6 +204,7 @@
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
 
+    // Keyboard Controls
     document.addEventListener("keydown", (e) => {
       if (!isPlaying && !isRamming && (e.code === "Space" || e.code === "Enter")) {
         startGame();
@@ -223,10 +224,12 @@
         player.state = "sliding";
         player.actionTimer = 28;
       }
-      player.x = lanes[currentLane];
     });
 
+    // Touch & Swipe Controls
     gameWrapper.addEventListener("touchstart", (e) => {
+      if (e.target.tagName === "BUTTON") return;
+
       if (!isPlaying && !isRamming) {
         startGame();
         return;
@@ -264,15 +267,11 @@
           }
         }
       }
-      player.x = lanes[currentLane];
       e.preventDefault();
     }, { passive: false });
 
     function startGame() {
-      // Cancel any active animation loops so they don't stack up
-      if (animFrameId) {
-        cancelAnimationFrame(animFrameId);
-      }
+      if (animFrameId) cancelAnimationFrame(animFrameId);
 
       tutorialScreen.style.display = "none";
       gameOverScreen.style.display = "none";
@@ -283,12 +282,12 @@
       gameSpeed = 5;
       currentLane = 1;
       runCycle = 0;
+      backgroundScroll = 0;
       
       isRamming = false;
       ramPhase = "none";
       ramTimer = 0;
 
-      // Reset Player properties explicitly
       player.x = lanes[currentLane];
       player.y = 400;
       player.width = 36;
@@ -319,6 +318,51 @@
       ctx.strokeStyle = borderColor;
       ctx.lineWidth = 2;
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+    }
+
+    function drawRooftopBuilding(x, y, w, h, variant = 0) {
+      const left = x - w / 2;
+      const top = y - h / 2;
+
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#64748b";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(left, top, w, h);
+
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(left + 6, top + 6, w - 12, h - 12);
+
+      if (variant === 0) {
+        ctx.strokeStyle = "#facc15";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = "#facc15";
+        ctx.font = "bold 20px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("H", x, y);
+      } else {
+        ctx.fillStyle = "#64748b";
+        ctx.beginPath();
+        ctx.arc(x, y - 8, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.arc(x, y - 8, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(left + 10, top + h - 26, 16, 12);
+      }
     }
 
     function drawTopDownRunner(x, y, state, isInvincible, cycle) {
@@ -448,20 +492,77 @@
       ctx.fillRect(left + w - 12, top + 2, 8, 4);
     }
 
+    function drawScenery(scrollOffset) {
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(0, 0, 55, canvas.height);
+      ctx.fillRect(canvas.width - 55, 0, 55, canvas.height);
+
+      const spacing = 130;
+      const totalElements = Math.ceil(canvas.height / spacing) + 2;
+      const startY = (scrollOffset % spacing) - spacing;
+
+      for (let i = 0; i < totalElements; i++) {
+        let currentY = startY + (i * spacing);
+
+        ctx.fillStyle = "#1f2937";
+        ctx.fillRect(8, currentY, 40, 75);
+        ctx.strokeStyle = "#374151";
+        ctx.strokeRect(8, currentY, 40, 75);
+
+        ctx.fillStyle = "#fde047";
+        ctx.fillRect(14, currentY + 12, 10, 12);
+        ctx.fillRect(28, currentY + 12, 10, 12);
+        ctx.fillRect(14, currentY + 40, 10, 12);
+        ctx.fillRect(28, currentY + 40, 10, 12);
+
+        ctx.fillStyle = "#9ca3af";
+        ctx.fillRect(50, currentY + 20, 6, 35);
+        ctx.fillStyle = "#eab308";
+        ctx.beginPath();
+        ctx.arc(53, currentY + 18, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#1f2937";
+        ctx.fillRect(canvas.width - 48, currentY + 60, 40, 75);
+        ctx.strokeStyle = "#374151";
+        ctx.strokeRect(canvas.width - 48, currentY + 60, 40, 75);
+
+        ctx.fillStyle = "#fde047";
+        ctx.fillRect(canvas.width - 42, currentY + 72, 10, 12);
+        ctx.fillRect(canvas.width - 28, currentY + 72, 10, 12);
+        ctx.fillRect(canvas.width - 42, currentY + 100, 10, 12);
+        ctx.fillRect(canvas.width - 28, currentY + 100, 10, 12);
+
+        ctx.fillStyle = "#9ca3af";
+        ctx.fillRect(canvas.width - 56, currentY + 80, 6, 35);
+        ctx.fillStyle = "#eab308";
+        ctx.beginPath();
+        ctx.arc(canvas.width - 53, currentY + 78, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     function update() {
       if (!isPlaying && !isRamming) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Lane Tracks
+      backgroundScroll += gameSpeed;
+      drawScenery(backgroundScroll);
+
       ctx.strokeStyle = "#374151";
       ctx.lineWidth = 2;
       ctx.strokeRect(120, 0, 120, canvas.height);
+
+      // Smooth horizontal lane movement
+      const targetX = lanes[currentLane];
+      player.x += (targetX - player.x) * 0.25;
 
       if (isRamming) {
         for (let b of boxes) {
           if (b.type === "low") drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
           else if (b.type === "high") drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
+          else if (b.type === "blocker") drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
           else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
         }
 
@@ -530,20 +631,31 @@
 
       runCycle += 0.22 + (gameSpeed * 0.015);
 
-      drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle);
-      drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
-
       spawnTimer++;
-      if (spawnTimer > 55) {
-        const randomLane = Math.floor(Math.random() * 3);
+      if (spawnTimer > 30) {
         const roll = Math.random();
 
-        if (roll < 0.4) {
-          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 46, h: 46, type: "low" });
-        } else if (roll < 0.75) {
-          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 52, h: 30, type: "high" });
+        if (roll < 0.55) {
+          const rLane = Math.floor(Math.random() * 3);
+          const typeRoll = Math.random();
+          if (typeRoll < 0.45) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 46, h: 46, type: "low" });
+          else if (typeRoll < 0.9) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 52, h: 30, type: "high" });
+          else boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 24, h: 24, type: "coin" });
         } else {
-          boxes.push({ lane: randomLane, x: lanes[randomLane], y: -30, w: 24, h: 24, type: "coin" });
+          const isDoubleBlock = Math.random() < 0.5;
+          if (isDoubleBlock) {
+            const openLane = Math.floor(Math.random() * 3);
+            for (let i = 0; i < 3; i++) {
+              if (i !== openLane) {
+                boxes.push({ lane: i, x: lanes[i], y: -60, w: 90, h: 85, type: "blocker", variant: Math.floor(Math.random() * 2) });
+              } else if (Math.random() < 0.5) {
+                boxes.push({ lane: i, x: lanes[i], y: -50, w: 24, h: 24, type: "coin" });
+              }
+            }
+          } else {
+            const rLane = Math.floor(Math.random() * 3);
+            boxes.push({ lane: rLane, x: lanes[rLane], y: -60, w: 90, h: 85, type: "blocker", variant: Math.floor(Math.random() * 2) });
+          }
         }
         spawnTimer = 0;
       }
@@ -552,18 +664,10 @@
         let b = boxes[i];
         b.y += gameSpeed;
 
-        if (b.type === "low") {
-          drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
-        } else if (b.type === "high") {
-          drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
-        } else if (b.type === "coin") {
-          drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
-        }
-
-        const sameLane = b.lane === currentLane;
+        const hitX = Math.abs(b.x - player.x) < (player.width / 2 + b.w / 2 - 6);
         const hitY = Math.abs(b.y - player.y) < (player.height / 2 + b.h / 2 - 6);
 
-        if (sameLane && hitY) {
+        if (hitX && hitY) {
           if (b.type === "coin") {
             coinCount++;
             coinsEl.innerText = coinCount;
@@ -571,10 +675,11 @@
             continue;
           }
 
-          const dodgedLow = b.type === "low" && player.state === "jumping";
-          const dodgedHigh = b.type === "high" && player.state === "sliding";
+          const dodgedLow = (b.type === "low" && player.state === "jumping");
+          const dodgedHigh = (b.type === "high" && player.state === "sliding");
+          const dodgedBlocker = (b.type === "blocker" && !hitX);
 
-          if (!dodgedLow && !dodgedHigh && player.invincibleTimer === 0) {
+          if (!dodgedLow && !dodgedHigh && !dodgedBlocker && player.invincibleTimer === 0) {
             boxes.splice(i, 1);
             handleObstacleHit();
             if (!isPlaying && !isRamming) return;
@@ -582,8 +687,34 @@
           }
         }
 
-        if (b.y > canvas.height + 50) {
+        if (b.y > canvas.height + 70) {
           boxes.splice(i, 1);
+        }
+      }
+
+      // --- LAYERED DRAWING PASSES ---
+
+      // Pass 1: Draw low blocks (red), blockers, and coins UNDER the player
+      for (let i = 0; i < boxes.length; i++) {
+        let b = boxes[i];
+        if (b.type === "low") {
+          drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
+        } else if (b.type === "blocker") {
+          drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
+        } else if (b.type === "coin") {
+          drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
+        }
+      }
+
+      // Pass 2: Draw Player and Chaser in the middle layer
+      drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle);
+      drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
+
+      // Pass 3: Draw high blocks (green slide obstacles) OVER the player
+      for (let i = 0; i < boxes.length; i++) {
+        let b = boxes[i];
+        if (b.type === "high") {
+          drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
         }
       }
 
@@ -599,7 +730,7 @@
       player.invincibleTimer = 45;
 
       if (player.hits === 1) {
-        chaser.targetY = player.y + 42;
+        chaser.targetY = 448;
         player.recoveryTimer = 300;
         dangerEl.innerText = "CLOSE!";
         dangerEl.style.color = "#ef4444";
