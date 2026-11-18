@@ -97,6 +97,9 @@
 </head>
 <body>
 
+  <!-- BACKGROUND MUSIC AUDIO ELEMENT -->
+  <audio id="bgMusic" src="Edd_Sheeran_-_Shape_Of_You_(mp3.pm).mp3" loop preload="auto"></audio>
+
   <div class="hud">
     <div>DISTANCE: <span id="score">0</span></div>
     <div>COINS: <span id="coins">0</span></div>
@@ -116,11 +119,11 @@
         </div>
         <div class="legend-item">
           <div class="swatch" style="background: #ef4444;"></div>
-          <span><strong>RED</strong> = Swipe Up to Jump</span>
+          <span><strong>BICYCLE</strong> = Swipe Up to Jump</span>
         </div>
         <div class="legend-item">
-          <div class="swatch" style="background: #22c55e; height: 10px;"></div>
-          <span><strong>GREEN</strong> = Swipe Down to Slide</span>
+          <div class="swatch" style="background: #d97706; height: 10px;"></div>
+          <span><strong>TRUCK/BUS</strong> = Swipe Down to Slide</span>
         </div>
         <div class="legend-item">
           <div class="swatch" style="background: #475569; height: 24px;"></div>
@@ -159,8 +162,10 @@
     const startBtn = document.getElementById("startBtn");
     const restartBtn = document.getElementById("restartBtn");
     const gameWrapper = document.getElementById("gameWrapper");
+    const bgMusic = document.getElementById("bgMusic");
 
-    const lanes = [60, 180, 300];
+    // 360px canvas: 54px left sidewalk + 252px road (3 equal 84px lanes) + 54px right sidewalk
+    const lanes = [96, 180, 264];
     let currentLane = 1;
     let score = 0;
     let coinCount = 0;
@@ -200,6 +205,7 @@
 
     let boxes = [];
     let spawnTimer = 0;
+    let blockerSpawnTimer = 0;
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
@@ -276,6 +282,11 @@
       tutorialScreen.style.display = "none";
       gameOverScreen.style.display = "none";
       
+      // Play background music when game starts
+      bgMusic.volume = 0.4;
+      bgMusic.currentTime = 0;
+      bgMusic.play().catch(err => console.log("Audio autoplay prevented:", err));
+      
       boxes = [];
       score = 0;
       coinCount = 0;
@@ -303,6 +314,9 @@
       chaser.y = 495;
       chaser.targetY = 495;
       
+      spawnTimer = 0;
+      blockerSpawnTimer = 0;
+
       coinsEl.innerText = "0";
       scoreEl.innerText = "0";
       dangerEl.innerText = "SAFE";
@@ -320,6 +334,88 @@
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
     }
 
+    // Side-facing Top-Down Bicycle spanning the lane cleanly
+    function drawBicycle(x, y, w, h) {
+      const left = x - w / 2;
+      const right = x + w / 2;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, w / 2, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#090d16";
+      ctx.fillRect(left, y - 4, 20, 8);
+      ctx.strokeStyle = "#4b5563";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(left, y - 4, 20, 8);
+
+      ctx.fillStyle = "#090d16";
+      ctx.fillRect(right - 20, y - 4, 20, 8);
+      ctx.strokeStyle = "#4b5563";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(right - 20, y - 4, 20, 8);
+
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(left + 10, y);
+      ctx.lineTo(right - 10, y);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#d1d5db";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(right - 14, y - 13);
+      ctx.lineTo(right - 14, y + 13);
+      ctx.stroke();
+
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(right - 16, y - 15, 4, 4);
+      ctx.fillRect(right - 16, y + 11, 4, 4);
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.fillRect(x - 2, y - 8, 4, 16);
+
+      ctx.fillStyle = "#111827";
+      ctx.beginPath();
+      ctx.ellipse(left + 22, y, 7, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Side-facing Top-Down Bus/Truck spanning the lane cleanly
+    function drawBus(x, y, w, h) {
+      const left = x - w / 2;
+      const top = y - h / 2;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.fillRect(left - 1, top + 4, w + 2, h);
+
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(left + 10, top - 4, 14, 4);
+      ctx.fillRect(left + w - 24, top - 4, 14, 4);
+      ctx.fillRect(left + 10, top + h, 14, 4);
+      ctx.fillRect(left + w - 24, top + h, 14, 4);
+
+      ctx.fillStyle = "#d97706";
+      ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#fde68a";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(left, top, w, h);
+
+      ctx.fillStyle = "#1e3a8a";
+      ctx.fillRect(left + w - 15, top + 4, 10, h - 8);
+
+      ctx.fillStyle = "#b45309";
+      ctx.fillRect(left + 10, top + 8, 18, h - 16);
+      ctx.strokeStyle = "#fde68a";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(left + 10, top + 8, 18, h - 16);
+
+      ctx.fillStyle = "#92400e";
+      ctx.fillRect(left + 34, top + 10, 15, h - 20);
+    }
+
     function drawRooftopBuilding(x, y, w, h, variant = 0) {
       const left = x - w / 2;
       const top = y - h / 2;
@@ -332,24 +428,24 @@
 
       ctx.strokeStyle = "#475569";
       ctx.lineWidth = 2;
-      ctx.strokeRect(left + 6, top + 6, w - 12, h - 12);
+      ctx.strokeRect(left + 5, top + 5, w - 10, h - 10);
 
       if (variant === 0) {
         ctx.strokeStyle = "#facc15";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.fillStyle = "#facc15";
-        ctx.font = "bold 20px monospace";
+        ctx.font = "bold 18px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("H", x, y);
       } else {
         ctx.fillStyle = "#64748b";
         ctx.beginPath();
-        ctx.arc(x, y - 8, 14, 0, Math.PI * 2);
+        ctx.arc(x, y - 8, 13, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = "#475569";
         ctx.lineWidth = 2;
@@ -357,11 +453,11 @@
 
         ctx.fillStyle = "#94a3b8";
         ctx.beginPath();
-        ctx.arc(x, y - 8, 8, 0, Math.PI * 2);
+        ctx.arc(x, y - 8, 7, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = "#475569";
-        ctx.fillRect(left + 10, top + h - 26, 16, 12);
+        ctx.fillRect(left + 8, top + h - 24, 14, 10);
       }
     }
 
@@ -493,51 +589,59 @@
     }
 
     function drawScenery(scrollOffset) {
-      ctx.fillStyle = "#111827";
-      ctx.fillRect(0, 0, 55, canvas.height);
-      ctx.fillRect(canvas.width - 55, 0, 55, canvas.height);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, 54, canvas.height);
+      ctx.fillRect(canvas.width - 54, 0, 54, canvas.height);
 
-      const spacing = 130;
+      ctx.strokeStyle = "#4b5563";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(54, 0);
+      ctx.lineTo(54, canvas.height);
+      ctx.moveTo(canvas.width - 54, 0);
+      ctx.lineTo(canvas.width - 54, canvas.height);
+      ctx.stroke();
+
+      const spacing = 140;
       const totalElements = Math.ceil(canvas.height / spacing) + 2;
       const startY = (scrollOffset % spacing) - spacing;
 
       for (let i = 0; i < totalElements; i++) {
         let currentY = startY + (i * spacing);
 
-        ctx.fillStyle = "#1f2937";
-        ctx.fillRect(8, currentY, 40, 75);
-        ctx.strokeStyle = "#374151";
-        ctx.strokeRect(8, currentY, 40, 75);
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(6, currentY, 42, 110);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(6, currentY, 42, 110);
 
-        ctx.fillStyle = "#fde047";
-        ctx.fillRect(14, currentY + 12, 10, 12);
-        ctx.fillRect(28, currentY + 12, 10, 12);
-        ctx.fillRect(14, currentY + 40, 10, 12);
-        ctx.fillRect(28, currentY + 40, 10, 12);
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(12, currentY + 15, 16, 22);
+        ctx.fillRect(12, currentY + 60, 20, 28);
 
-        ctx.fillStyle = "#9ca3af";
-        ctx.fillRect(50, currentY + 20, 6, 35);
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(48, currentY + 45, 3, 30);
         ctx.fillStyle = "#eab308";
         ctx.beginPath();
-        ctx.arc(53, currentY + 18, 5, 0, Math.PI * 2);
+        ctx.arc(49, currentY + 45, 4.5, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = "#1f2937";
-        ctx.fillRect(canvas.width - 48, currentY + 60, 40, 75);
-        ctx.strokeStyle = "#374151";
-        ctx.strokeRect(canvas.width - 48, currentY + 60, 40, 75);
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(canvas.width - 48, currentY + 30, 42, 110);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width - 48, currentY + 30, 42, 110);
 
-        ctx.fillStyle = "#fde047";
-        ctx.fillRect(canvas.width - 42, currentY + 72, 10, 12);
-        ctx.fillRect(canvas.width - 28, currentY + 72, 10, 12);
-        ctx.fillRect(canvas.width - 42, currentY + 100, 10, 12);
-        ctx.fillRect(canvas.width - 28, currentY + 100, 10, 12);
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(canvas.width - 40, currentY + 45, 18, 24);
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(canvas.width - 42, currentY + 90, 22, 18);
 
-        ctx.fillStyle = "#9ca3af";
-        ctx.fillRect(canvas.width - 56, currentY + 80, 6, 35);
+        ctx.fillStyle = "#64748b";
+        ctx.fillRect(canvas.width - 51, currentY + 75, 3, 30);
         ctx.fillStyle = "#eab308";
         ctx.beginPath();
-        ctx.arc(canvas.width - 53, currentY + 78, 5, 0, Math.PI * 2);
+        ctx.arc(canvas.width - 50, currentY + 75, 4.5, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -552,16 +656,20 @@
 
       ctx.strokeStyle = "#374151";
       ctx.lineWidth = 2;
-      ctx.strokeRect(120, 0, 120, canvas.height);
+      ctx.beginPath();
+      ctx.moveTo(138, 0);
+      ctx.lineTo(138, canvas.height);
+      ctx.moveTo(222, 0);
+      ctx.lineTo(222, canvas.height);
+      ctx.stroke();
 
-      // Smooth horizontal lane movement
       const targetX = lanes[currentLane];
       player.x += (targetX - player.x) * 0.25;
 
       if (isRamming) {
         for (let b of boxes) {
-          if (b.type === "low") drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
-          else if (b.type === "high") drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
+          if (b.type === "low") drawBicycle(b.x, b.y, b.w, b.h);
+          else if (b.type === "high") drawBus(b.x, b.y, b.w, b.h);
           else if (b.type === "blocker") drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
           else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
         }
@@ -595,6 +703,8 @@
 
           if (player.y < -60) {
             isRamming = false;
+            bgMusic.pause(); // Pause music on game over
+            bgMusic.currentTime = 0;
             gameOverScreen.style.display = "flex";
             return;
           }
@@ -638,8 +748,8 @@
         if (roll < 0.55) {
           const rLane = Math.floor(Math.random() * 3);
           const typeRoll = Math.random();
-          if (typeRoll < 0.45) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 46, h: 46, type: "low" });
-          else if (typeRoll < 0.9) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 52, h: 30, type: "high" });
+          if (typeRoll < 0.45) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 74, h: 30, type: "low" });
+          else if (typeRoll < 0.9) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 78, h: 44, type: "high" });
           else boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 24, h: 24, type: "coin" });
         } else {
           const isDoubleBlock = Math.random() < 0.5;
@@ -647,14 +757,14 @@
             const openLane = Math.floor(Math.random() * 3);
             for (let i = 0; i < 3; i++) {
               if (i !== openLane) {
-                boxes.push({ lane: i, x: lanes[i], y: -60, w: 90, h: 85, type: "blocker", variant: Math.floor(Math.random() * 2) });
+                boxes.push({ lane: i, x: lanes[i], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
               } else if (Math.random() < 0.5) {
                 boxes.push({ lane: i, x: lanes[i], y: -50, w: 24, h: 24, type: "coin" });
               }
             }
           } else {
             const rLane = Math.floor(Math.random() * 3);
-            boxes.push({ lane: rLane, x: lanes[rLane], y: -60, w: 90, h: 85, type: "blocker", variant: Math.floor(Math.random() * 2) });
+            boxes.push({ lane: rLane, x: lanes[rLane], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
           }
         }
         spawnTimer = 0;
@@ -692,13 +802,10 @@
         }
       }
 
-      // --- LAYERED DRAWING PASSES ---
-
-      // Pass 1: Draw low blocks (red), blockers, and coins UNDER the player
       for (let i = 0; i < boxes.length; i++) {
         let b = boxes[i];
         if (b.type === "low") {
-          drawBox(b.x, b.y, b.w, b.h, "#ef4444", "#fca5a5");
+          drawBicycle(b.x, b.y, b.w, b.h);
         } else if (b.type === "blocker") {
           drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
         } else if (b.type === "coin") {
@@ -706,15 +813,13 @@
         }
       }
 
-      // Pass 2: Draw Player and Chaser in the middle layer
       drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle);
       drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
 
-      // Pass 3: Draw high blocks (green slide obstacles) OVER the player
       for (let i = 0; i < boxes.length; i++) {
         let b = boxes[i];
         if (b.type === "high") {
-          drawBox(b.x, b.y, b.w, b.h, "#22c55e", "#bbf7d0");
+          drawBus(b.x, b.y, b.w, b.h);
         }
       }
 
