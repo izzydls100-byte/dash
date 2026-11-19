@@ -12,92 +12,64 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      height: 100dvh;
       font-family: monospace;
       color: white;
       touch-action: none;
     }
-    .hud {
-      display: flex;
-      gap: 25px;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-    .game-wrapper {
-      position: relative;
-      width: 360px;
-      height: 520px;
-      overflow: hidden;
-    }
+    .hud { display: flex; gap: 25px; font-size: 16px; margin-bottom: 10px; }
+    .game-wrapper { position: relative; width: 360px; height: 520px; overflow: hidden; }
     canvas {
       background-color: #1f2937;
       border: 3px solid #4b5563;
       display: block;
     }
-    #tutorialScreen, #gameOverScreen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+    #tutorialScreen, #gameOverScreen, #missionScreen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background-color: rgba(17, 24, 39, 0.92);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
-      border: 3px solid #6b7280;
-      z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box;
+      border: 3px solid #6b7280; z-index: 10;
     }
-    #gameOverScreen {
+    #gameOverScreen { display: none; }
+    #missionScreen {
       display: none;
+      background-color: rgba(20, 10, 45, 0.82);
+      border-color: #22c55e;
+      animation: missionFade 1.4s ease;
     }
+    @keyframes missionFade { from { opacity: 0; } to { opacity: 1; } }
+    .mission-title {
+      font-size: 32px; margin: 0 0 10px 0;
+      text-align: center; letter-spacing: 2px; line-height: 1.15;
+      background: linear-gradient(90deg, #15803d, #22c55e, #86efac);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.8));
+    }
+    .mission-stats { text-align: center; line-height: 1.8; margin: 10px 0; color: #dcfce7; }
     .legend {
-      width: 100%;
-      margin: 15px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      width: 100%; margin: 15px 0;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-size: 13px;
-    }
-    .swatch {
-      width: 20px;
-      height: 20px;
-      border: 2px solid white;
-      flex-shrink: 0;
-    }
+    .legend-item { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+    .swatch { width: 20px; height: 20px; border: 2px solid white; flex-shrink: 0; }
     button {
-      background-color: #eab308;
-      color: #111827;
-      border: none;
-      padding: 12px 24px;
-      font-family: monospace;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-top: 10px;
+      background-color: #eab308; color: #111827;
+      border: none; padding: 12px 24px;
+      font-family: monospace; font-size: 16px; font-weight: bold;
+      cursor: pointer; border-radius: 4px; margin-top: 10px;
     }
-    button:hover {
-      background-color: #fde047;
-    }
+    button:hover { background-color: #fde047; }
     .controls {
-      margin-top: 12px;
-      color: #9ca3af;
-      font-size: 13px;
-      text-align: center;
+      margin-top: 12px; color: #9ca3af; font-size: 13px; text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <!-- BACKGROUND MUSIC AUDIO ELEMENT -->
   <audio id="bgMusic" src="Edd_Sheeran_-_Shape_Of_You_(mp3.pm).mp3" loop preload="auto"></audio>
 
   <div class="hud">
@@ -109,39 +81,36 @@
   <div class="game-wrapper" id="gameWrapper">
     <canvas id="gameCanvas" width="360" height="520"></canvas>
 
-    <!-- TUTORIAL SCREEN -->
     <div id="tutorialScreen">
       <h2 style="margin: 0 0 10px 0;">HOW TO PLAY</h2>
       <div class="legend">
-        <div class="legend-item">
-          <div class="swatch" style="background: #1e293b;"></div>
-          <span><strong>SUIT AGENT</strong> = You</span>
-        </div>
-        <div class="legend-item">
-          <div class="swatch" style="background: #ef4444;"></div>
-          <span><strong>BICYCLE</strong> = Swipe Up to Jump</span>
-        </div>
-        <div class="legend-item">
-          <div class="swatch" style="background: #d97706; height: 10px;"></div>
-          <span><strong>TRUCK/BUS</strong> = Swipe Down to Slide</span>
-        </div>
-        <div class="legend-item">
-          <div class="swatch" style="background: #475569; height: 24px;"></div>
-          <span><strong>ROOFTOP</strong> = Switch Lanes!</span>
-        </div>
-        <div class="legend-item">
-          <div class="swatch" style="background: #3b82f6;"></div>
-          <span><strong>BLUE CAR</strong> = Chaser (Avoid!)</span>
-        </div>
+        <div class="legend-item"><div class="swatch" style="background: #1e293b;"></div><span><strong>SUIT AGENT</strong> = You</span></div>
+        <div class="legend-item"><div class="swatch" style="background: #ef4444;"></div><span><strong>BICYCLE</strong> = Swipe Up to Jump</span></div>
+        <div class="legend-item"><div class="swatch" style="background: #d97706; height: 10px;"></div><span><strong>TRUCK/BUS</strong> = Swipe Down to Slide</span></div>
+        <div class="legend-item"><div class="swatch" style="background: #475569; height: 24px;"></div><span><strong>ROOFTOP</strong> = Switch Lanes!</span></div>
+        <div class="legend-item"><div class="swatch" style="background: #3b82f6;"></div><span><strong>BLUE CAR</strong> = Chaser (2 hits = game over)</span></div>
+        <div class="legend-item"><div class="swatch" style="background: #a855f7; border-radius: 50%;"></div><span><strong>PORTAL</strong> = Reach 100 to escape!</span></div>
+        <div class="legend-item"><div class="swatch" style="background: linear-gradient(135deg, #0891b2, #f472b6, #eab308); border-radius: 50%;"></div><span><strong>POWER-UPS</strong> = Shield / Magnet / 2x Coins</span></div>
       </div>
       <button id="startBtn">START GAME</button>
     </div>
 
-    <!-- GAME OVER SCREEN -->
     <div id="gameOverScreen">
-      <h2 style="color: #3b82f6; margin-bottom: 10px;">BLOWN AWAY!</h2>
-      <p style="margin-bottom: 20px; text-align: center; color: #9ca3af;">The car launched you off the screen.</p>
+      <h2 style="color: #3b82f6; margin-bottom: 10px;">HAHA LOSER</h2>
+      <p style="margin: 0 0 10px 0; text-align: center; color: #9ca3af;">YOU CAN'T EVEN WIN THIS SIMPLE THING</p>
+      <p style="margin: 0 0 20px 0; text-align: center; color: #fde047;">BEST: <span id="bestOnDeath">0</span></p>
       <button id="restartBtn">PLAY AGAIN</button>
+    </div>
+
+    <div id="missionScreen">
+      <h1 class="mission-title">NAIJA<br>SPIDER</h1>
+      <p style="margin: 0; text-align: center; color: #86efac;">The full game will be released next year till then get a job</p>
+      <div class="mission-stats">
+        DISTANCE: <span id="finalDistance">0</span><br>
+        COINS: <span id="finalCoins">0</span><br>
+        <span style="color: #fde047;">BEST: <span id="bestOnMission">0</span></span>
+      </div>
+      <button id="missionRestartBtn">PLAY AGAIN</button>
     </div>
   </div>
 
@@ -156,15 +125,109 @@
     const scoreEl = document.getElementById("score");
     const coinsEl = document.getElementById("coins");
     const dangerEl = document.getElementById("danger");
-
     const tutorialScreen = document.getElementById("tutorialScreen");
     const gameOverScreen = document.getElementById("gameOverScreen");
+    const missionScreen = document.getElementById("missionScreen");
     const startBtn = document.getElementById("startBtn");
     const restartBtn = document.getElementById("restartBtn");
+    const missionRestartBtn = document.getElementById("missionRestartBtn");
+    const finalDistanceEl = document.getElementById("finalDistance");
+    const finalCoinsEl = document.getElementById("finalCoins");
+    const bestOnDeathEl = document.getElementById("bestOnDeath");
+    const bestOnMissionEl = document.getElementById("bestOnMission");
     const gameWrapper = document.getElementById("gameWrapper");
     const bgMusic = document.getElementById("bgMusic");
 
-    // 360px canvas: 54px left sidewalk + 252px road (3 equal 84px lanes) + 54px right sidewalk
+    const CANVAS_W = 360;
+    const CANVAS_H = 520;
+
+    (function setupHiDPI() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = CANVAS_W * dpr;
+      canvas.height = CANVAS_H * dpr;
+      canvas.style.width = CANVAS_W + "px";
+      canvas.style.height = CANVAS_H + "px";
+      ctx.scale(dpr, dpr);
+    })();
+
+    const BEST_KEY = "dangerDashBestDistance";
+    function getBestDistance() { return parseInt(localStorage.getItem(BEST_KEY) || "0", 10); }
+    function saveBestDistance(d) {
+      if (d > getBestDistance()) localStorage.setItem(BEST_KEY, String(d));
+      return getBestDistance();
+    }
+
+    // ---------- WEB AUDIO SFX ----------
+    let audioCtx = null;
+    function ensureAudioCtx() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        catch (e) { console.log("AudioContext not available"); }
+      }
+      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    }
+    function playThwoop() {
+      if (!audioCtx) return;
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(850, t);
+      osc.frequency.exponentialRampToValueAtTime(140, t + 0.18);
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.32, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.22);
+      const n = Math.floor(audioCtx.sampleRate * 0.08);
+      const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 4);
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buf;
+      const ng = audioCtx.createGain();
+      ng.gain.setValueAtTime(0.18, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      noise.connect(ng); ng.connect(audioCtx.destination);
+      noise.start(t);
+    }
+    function playWhoosh() {
+      if (!audioCtx) return;
+      const t = audioCtx.currentTime;
+      const n = Math.floor(audioCtx.sampleRate * 0.4);
+      const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1300, t);
+      filter.frequency.exponentialRampToValueAtTime(280, t + 0.4);
+      filter.Q.value = 2.0;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+      src.start(t);
+    }
+    function playSpiderSense() {
+      if (!audioCtx) return;
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(500, t);
+      osc.frequency.exponentialRampToValueAtTime(2000, t + 0.3);
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.15, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.4);
+    }
+
+    // ---------- GAME STATE ----------
     const lanes = [96, 180, 264];
     let currentLane = 1;
     let score = 0;
@@ -172,680 +235,1497 @@
     let gameSpeed = 5;
     let isPlaying = false;
     let animFrameId = null;
-
     let isRamming = false;
     let ramPhase = "none";
     let ramTimer = 0;
     let runCycle = 0;
     let backgroundScroll = 0;
+    let touchStartX = 0, touchStartY = 0, swipeConsumed = false;
 
-    let touchStartX = 0;
-    let touchStartY = 0;
+    const PORTAL_DISTANCE = 100;
+    const JUMP_FRAMES = 55;
+    const ENTER_FRAMES = 45;
+    const JUMP_DURATION = 26;
+    const SLIDE_DURATION = 24;
+    const LANE_LERP = 0.5;
+    const POWERUP_DURATION = 480;
+
+    let portalPhase = "none";
+    let portalIntensity = 0;
+    let spawnStopped = false;
+    let cutTimer = 0;
+    let flashAlpha = 0;
+    let jumpStart = { x: 0, y: 0 };
+    let canRestart = true;
+
+    // ---------- CUTSCENE TIMINGS ----------
+    const CUT = {
+      lab:       { start: 0,    end: 200 },
+      transform: { start: 200,  end: 280 },
+      escape:    { start: 280,  end: 420 },
+      fall:      { start: 420,  end: 960 },
+      title:     { start: 960,  end: 1080 }
+    };
+    let cutsceneActive = false;
+    let cutsceneFrame = 0;
+    let thwoopPlayed = false;
+    let lastWhooshSwingIdx = -1;
+    let spiderSensePlayed = false;
+
+    // ---------- SCENE 4 SETUP ----------
+    const GROUND_Y = 480;
+    const FG_SPACING = 120;
+    const BG_SPACING = 85;
+    const SWING_ROPE = 248;
+    const SWING_ANGLE_MAX = 75 * Math.PI / 180;
+
+    const ANCHOR_SEED_IDXS = [4, 8, 12, 16, 20];
+    const ANCHOR_HEIGHT = 280;
+
+    function fgBuildingHeight(seedIdx) {
+      if (ANCHOR_SEED_IDXS.includes(seedIdx)) return ANCHOR_HEIGHT;
+      return 100 + Math.abs(Math.sin(seedIdx * 1.7 + 1)) * 180;
+    }
+
+    const swingAnchors = ANCHOR_SEED_IDXS.map(seedIdx => {
+      const worldX = seedIdx * FG_SPACING + (FG_SPACING - 8) / 2;
+      const worldY = GROUND_Y - ANCHOR_HEIGHT;
+      return { seedIdx, worldX, worldY };
+    });
+
+    const S4 = {
+      FALL_START: 0, FALL_END: 40,
+      UNLOCK_START: 40, UNLOCK_END: 70,
+      SWING_START: 70, SWING_END: 345,
+      BACKFLIP_START: 345, BACKFLIP_END: 420,
+      LANDING_START: 420, LANDING_END: 465,
+      STAND_START: 465, STAND_END: 505,
+      HOLD_END: 540
+    };
+    const SWING_DURATION = 55;
+
+    const portal = { x: 180, y: -140, stopY: 170, open: 0, angle: 0, spinSpeed: 0.05 };
 
     const player = {
-      x: lanes[currentLane],
-      y: 400,
-      width: 36,
-      height: 36,
-      state: "running",
-      actionTimer: 0,
-      hits: 0,
-      invincibleTimer: 0,
-      recoveryTimer: 0,
-      vy: 0
+      x: lanes[currentLane], y: 400, width: 36, height: 36,
+      state: "running", actionTimer: 0,
+      hits: 0, invincibleTimer: 0, recoveryTimer: 0, vy: 0,
+      shield: false, magnetTimer: 0, coinDoubleTimer: 0, pickupFlash: 0
     };
 
-    const chaser = {
-      x: lanes[currentLane],
-      y: 495,
-      targetY: 495,
-      width: 48,
-      height: 60
-    };
+    const chaser = { x: lanes[currentLane], y: 495, targetY: 495, width: 48, height: 60 };
 
-    let boxes = [];
+    let entities = [];
     let spawnTimer = 0;
-    let blockerSpawnTimer = 0;
 
     startBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", startGame);
+    missionRestartBtn.addEventListener("click", startGame);
 
-    // Keyboard Controls
+    function controlsLocked() { return portalPhase === "jump" || portalPhase === "enter" || portalPhase === "done"; }
+    function lockRestart() {
+      canRestart = false;
+      setTimeout(() => { canRestart = true; }, 700);
+    }
+    function changeLane(direction) {
+      const next = currentLane + direction;
+      if (next < 0 || next > 2) return;
+      currentLane = next;
+    }
+    function doJump() {
+      if (player.state === "jumping") return;
+      player.state = "jumping"; player.actionTimer = JUMP_DURATION;
+    }
+    function doSlide() {
+      if (player.state === "sliding") return;
+      player.state = "sliding"; player.actionTimer = SLIDE_DURATION;
+    }
+    function applyPowerup(pType) {
+      if (pType === "shield") player.shield = true;
+      else if (pType === "magnet") player.magnetTimer = POWERUP_DURATION;
+      else if (pType === "coin2x") player.coinDoubleTimer = POWERUP_DURATION;
+      player.pickupFlash = 20;
+    }
+    function skipCutscene() {
+      if (cutsceneFrame < CUT.title.start) cutsceneFrame = CUT.title.start;
+      else if (cutsceneFrame < CUT.title.end) cutsceneFrame = CUT.title.end;
+    }
+
     document.addEventListener("keydown", (e) => {
-      if (!isPlaying && !isRamming && (e.code === "Space" || e.code === "Enter")) {
-        startGame();
+      if (e.target.tagName !== "BUTTON" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
+        e.preventDefault();
+      }
+      if (cutsceneActive) { e.preventDefault(); skipCutscene(); return; }
+      const canStart = (!isPlaying && !isRamming) || portalPhase === "done";
+      if (canStart && (e.code === "Space" || e.code === "Enter")) {
+        if (canRestart) startGame();
         return;
       }
-
-      if (!isPlaying || isRamming) return;
-
-      if (e.key === "ArrowLeft" && currentLane > 0) {
-        currentLane--;
-      } else if (e.key === "ArrowRight" && currentLane < 2) {
-        currentLane++;
-      } else if (e.key === "ArrowUp" && player.state === "running") {
-        player.state = "jumping";
-        player.actionTimer = 28;
-      } else if (e.key === "ArrowDown" && player.state === "running") {
-        player.state = "sliding";
-        player.actionTimer = 28;
-      }
+      if (!isPlaying || isRamming || controlsLocked()) return;
+      if (e.repeat) return;
+      if (e.key === "ArrowLeft") changeLane(-1);
+      else if (e.key === "ArrowRight") changeLane(1);
+      else if (e.key === "ArrowUp") doJump();
+      else if (e.key === "ArrowDown") doSlide();
     });
 
-    // Touch & Swipe Controls
+    function trySwipe(touch) {
+      if (swipeConsumed) return;
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      const minSwipe = 26;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > minSwipe) { changeLane(dx < 0 ? -1 : 1); swipeConsumed = true; }
+      } else {
+        if (Math.abs(dy) > minSwipe) { if (dy < 0) doJump(); else doSlide(); swipeConsumed = true; }
+      }
+    }
+
     gameWrapper.addEventListener("touchstart", (e) => {
       if (e.target.tagName === "BUTTON") return;
-
-      if (!isPlaying && !isRamming) {
-        startGame();
+      if (cutsceneActive) { e.preventDefault(); skipCutscene(); return; }
+      if ((!isPlaying && !isRamming) || portalPhase === "done") {
+        if (canRestart) startGame();
+        e.preventDefault();
         return;
       }
       const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
+      touchStartX = touch.clientX; touchStartY = touch.clientY;
+      swipeConsumed = false;
+      e.preventDefault();
+    }, { passive: false });
+
+    gameWrapper.addEventListener("touchmove", (e) => {
+      if (!isPlaying || isRamming || controlsLocked() || cutsceneActive) return;
+      trySwipe(e.touches[0]);
       e.preventDefault();
     }, { passive: false });
 
     gameWrapper.addEventListener("touchend", (e) => {
-      if (!isPlaying || isRamming) return;
-
-      const touch = e.changedTouches[0];
-      const deltaX = touch.clientX - touchStartX;
-      const deltaY = touch.clientY - touchStartY;
-      const minSwipeDistance = 30;
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (Math.abs(deltaX) > minSwipeDistance) {
-          if (deltaX < 0 && currentLane > 0) {
-            currentLane--;
-          } else if (deltaX > 0 && currentLane < 2) {
-            currentLane++;
-          }
-        }
-      } else {
-        if (Math.abs(deltaY) > minSwipeDistance) {
-          if (deltaY < 0 && player.state === "running") {
-            player.state = "jumping";
-            player.actionTimer = 28;
-          } else if (deltaY > 0 && player.state === "running") {
-            player.state = "sliding";
-            player.actionTimer = 28;
-          }
-        }
-      }
+      if (!isPlaying || isRamming || controlsLocked() || cutsceneActive) return;
+      trySwipe(e.changedTouches[0]);
       e.preventDefault();
     }, { passive: false });
 
     function startGame() {
-      if (animFrameId) cancelAnimationFrame(animFrameId);
-
+      ensureAudioCtx();
       tutorialScreen.style.display = "none";
       gameOverScreen.style.display = "none";
-      
-      // Play background music when game starts
+      missionScreen.style.display = "none";
       bgMusic.volume = 0.4;
       bgMusic.currentTime = 0;
       bgMusic.play().catch(err => console.log("Audio autoplay prevented:", err));
-      
-      boxes = [];
-      score = 0;
-      coinCount = 0;
-      gameSpeed = 5;
-      currentLane = 1;
-      runCycle = 0;
-      backgroundScroll = 0;
-      
-      isRamming = false;
-      ramPhase = "none";
-      ramTimer = 0;
 
-      player.x = lanes[currentLane];
-      player.y = 400;
-      player.width = 36;
-      player.height = 36;
-      player.state = "running";
-      player.actionTimer = 0;
-      player.hits = 0;
-      player.invincibleTimer = 0;
-      player.recoveryTimer = 0;
+      entities = [];
+      score = 0; coinCount = 0; gameSpeed = 5; currentLane = 1;
+      runCycle = 0; backgroundScroll = 0;
+      isRamming = false; ramPhase = "none"; ramTimer = 0;
+
+      portalPhase = "none"; portalIntensity = 0; spawnStopped = false;
+      cutTimer = 0; flashAlpha = 0;
+      portal.y = -140; portal.open = 0; portal.angle = 0; portal.spinSpeed = 0.05;
+
+      cutsceneActive = false; cutsceneFrame = 0;
+      thwoopPlayed = false; lastWhooshSwingIdx = -1; spiderSensePlayed = false;
+
+      player.x = lanes[currentLane]; player.y = 400;
+      player.width = 36; player.height = 36;
+      player.state = "running"; player.actionTimer = 0;
+      player.hits = 0; player.invincibleTimer = 0; player.recoveryTimer = 0;
       player.vy = 0;
-      
-      chaser.x = lanes[currentLane];
-      chaser.y = 495;
-      chaser.targetY = 495;
-      
-      spawnTimer = 0;
-      blockerSpawnTimer = 0;
+      player.shield = false; player.magnetTimer = 0;
+      player.coinDoubleTimer = 0; player.pickupFlash = 0;
 
-      coinsEl.innerText = "0";
-      scoreEl.innerText = "0";
-      dangerEl.innerText = "SAFE";
-      dangerEl.style.color = "#22c55e";
-      
+      chaser.x = lanes[currentLane]; chaser.y = 495; chaser.targetY = 495;
+      spawnTimer = 0; swipeConsumed = false;
+
+      coinsEl.innerText = "0"; scoreEl.innerText = "0";
+      dangerEl.innerText = "SAFE"; dangerEl.style.color = "#22c55e";
+
       isPlaying = true;
-      update();
     }
 
+    // ================= GAMEPLAY DRAWING =================
     function drawBox(x, y, w, h, fillColor, borderColor) {
       ctx.fillStyle = fillColor;
       ctx.fillRect(x - w / 2, y - h / 2, w, h);
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = borderColor; ctx.lineWidth = 2;
       ctx.strokeRect(x - w / 2, y - h / 2, w, h);
     }
-
-    // Side-facing Top-Down Bicycle spanning the lane cleanly
     function drawBicycle(x, y, w, h) {
-      const left = x - w / 2;
-      const right = x + w / 2;
-
+      const left = x - w / 2, right = x + w / 2;
       ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
-      ctx.beginPath();
-      ctx.ellipse(x, y, w / 2, 12, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#090d16";
-      ctx.fillRect(left, y - 4, 20, 8);
-      ctx.strokeStyle = "#4b5563";
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(left, y - 4, 20, 8);
-
-      ctx.fillStyle = "#090d16";
-      ctx.fillRect(right - 20, y - 4, 20, 8);
-      ctx.strokeStyle = "#4b5563";
-      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(x, y, w / 2, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#090d16"; ctx.fillRect(left, y - 4, 20, 8);
+      ctx.strokeStyle = "#4b5563"; ctx.lineWidth = 1.5; ctx.strokeRect(left, y - 4, 20, 8);
+      ctx.fillStyle = "#090d16"; ctx.fillRect(right - 20, y - 4, 20, 8);
       ctx.strokeRect(right - 20, y - 4, 20, 8);
-
-      ctx.strokeStyle = "#ef4444";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(left + 10, y);
-      ctx.lineTo(right - 10, y);
-      ctx.stroke();
-
-      ctx.strokeStyle = "#d1d5db";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(right - 14, y - 13);
-      ctx.lineTo(right - 14, y + 13);
-      ctx.stroke();
-
+      ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(left + 10, y); ctx.lineTo(right - 10, y); ctx.stroke();
+      ctx.strokeStyle = "#d1d5db"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(right - 14, y - 13); ctx.lineTo(right - 14, y + 13); ctx.stroke();
       ctx.fillStyle = "#ef4444";
       ctx.fillRect(right - 16, y - 15, 4, 4);
       ctx.fillRect(right - 16, y + 11, 4, 4);
-
-      ctx.fillStyle = "#9ca3af";
-      ctx.fillRect(x - 2, y - 8, 4, 16);
-
+      ctx.fillStyle = "#9ca3af"; ctx.fillRect(x - 2, y - 8, 4, 16);
       ctx.fillStyle = "#111827";
-      ctx.beginPath();
-      ctx.ellipse(left + 22, y, 7, 5, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(left + 22, y, 7, 5, 0, 0, Math.PI * 2); ctx.fill();
     }
-
-    // Side-facing Top-Down Bus/Truck spanning the lane cleanly
     function drawBus(x, y, w, h) {
-      const left = x - w / 2;
-      const top = y - h / 2;
-
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.fillRect(left - 1, top + 4, w + 2, h);
-
+      const left = x - w / 2, top = y - h / 2;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; ctx.fillRect(left - 1, top + 4, w + 2, h);
       ctx.fillStyle = "#111827";
-      ctx.fillRect(left + 10, top - 4, 14, 4);
-      ctx.fillRect(left + w - 24, top - 4, 14, 4);
-      ctx.fillRect(left + 10, top + h, 14, 4);
-      ctx.fillRect(left + w - 24, top + h, 14, 4);
-
-      ctx.fillStyle = "#d97706";
-      ctx.fillRect(left, top, w, h);
-      ctx.strokeStyle = "#fde68a";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(left, top, w, h);
-
-      ctx.fillStyle = "#1e3a8a";
-      ctx.fillRect(left + w - 15, top + 4, 10, h - 8);
-
-      ctx.fillStyle = "#b45309";
-      ctx.fillRect(left + 10, top + 8, 18, h - 16);
-      ctx.strokeStyle = "#fde68a";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(left + 10, top + 8, 18, h - 16);
-
-      ctx.fillStyle = "#92400e";
-      ctx.fillRect(left + 34, top + 10, 15, h - 20);
+      ctx.fillRect(left + 10, top - 4, 14, 4); ctx.fillRect(left + w - 24, top - 4, 14, 4);
+      ctx.fillRect(left + 10, top + h, 14, 4); ctx.fillRect(left + w - 24, top + h, 14, 4);
+      ctx.fillStyle = "#d97706"; ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 2; ctx.strokeRect(left, top, w, h);
+      ctx.fillStyle = "#1e3a8a"; ctx.fillRect(left + w - 15, top + 4, 10, h - 8);
+      ctx.fillStyle = "#b45309"; ctx.fillRect(left + 10, top + 8, 18, h - 16);
+      ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 1; ctx.strokeRect(left + 10, top + 8, 18, h - 16);
+      ctx.fillStyle = "#92400e"; ctx.fillRect(left + 34, top + 10, 15, h - 20);
     }
-
     function drawRooftopBuilding(x, y, w, h, variant = 0) {
-      const left = x - w / 2;
-      const top = y - h / 2;
-
-      ctx.fillStyle = "#334155";
-      ctx.fillRect(left, top, w, h);
-      ctx.strokeStyle = "#64748b";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(left, top, w, h);
-
-      ctx.strokeStyle = "#475569";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(left + 5, top + 5, w - 10, h - 10);
-
+      ctx.save();
+      const left = x - w / 2, top = y - h / 2;
+      ctx.fillStyle = "#334155"; ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#64748b"; ctx.lineWidth = 2; ctx.strokeRect(left, top, w, h);
+      ctx.strokeStyle = "#475569"; ctx.strokeRect(left + 5, top + 5, w - 10, h - 10);
       if (variant === 0) {
         ctx.strokeStyle = "#facc15";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 20, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.fillStyle = "#facc15";
-        ctx.font = "bold 18px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#facc15"; ctx.font = "bold 18px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("H", x, y);
       } else {
         ctx.fillStyle = "#64748b";
-        ctx.beginPath();
-        ctx.arc(x, y - 8, 13, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#475569";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
+        ctx.beginPath(); ctx.arc(x, y - 8, 13, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = "#94a3b8";
-        ctx.beginPath();
-        ctx.arc(x, y - 8, 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#475569";
-        ctx.fillRect(left + 8, top + h - 24, 14, 10);
+        ctx.beginPath(); ctx.arc(x, y - 8, 7, 0, Math.PI * 2); ctx.fill();
       }
+      ctx.restore();
     }
-
-    function drawTopDownRunner(x, y, state, isInvincible, cycle) {
-      ctx.save();
-      ctx.translate(x, y);
-
+    function drawTopDownRunner(x, y, state, isInvincible, cycle, lift = 0) {
+      ctx.save(); ctx.translate(x, y);
       if (state === "jumping") {
-        ctx.scale(1.25, 1.25);
-        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-        ctx.beginPath();
-        ctx.ellipse(0, 8, 16, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.save(); ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.beginPath(); ctx.ellipse(0, 8, 16, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ctx.translate(0, -lift); ctx.scale(1.25, 1.25);
       }
-
       const flashWhite = isInvincible && Math.floor(Date.now() / 60) % 2 === 0;
       const suitColor = flashWhite ? "#ffffff" : "#1e293b";
       const suitOutline = flashWhite ? "#ef4444" : "#475569";
-      const pantsColor = "#0f172a";
-      const shoeColor = "#000000";
-      const hairColor = "#111827";
-      const skinColor = "#fbbf24";
-
       const stride = state === "running" ? Math.sin(cycle) * 11 : 0;
-
       if (state === "sliding") {
-        ctx.fillStyle = pantsColor;
-        ctx.fillRect(-10, -24, 8, 22);
-        ctx.fillRect(2, -20, 8, 18);
-        ctx.fillStyle = shoeColor;
-        ctx.fillRect(-10, -28, 8, 5);
-        ctx.fillRect(2, -24, 8, 5);
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(-10, -24, 8, 22); ctx.fillRect(2, -20, 8, 18);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(-10, -28, 8, 5); ctx.fillRect(2, -24, 8, 5);
+        ctx.fillStyle = suitColor; ctx.fillRect(-15, -4, 30, 18);
+        ctx.fillStyle = "#fbbf24";
+        ctx.beginPath(); ctx.arc(0, 14, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#111827";
+        ctx.beginPath(); ctx.arc(0, 15, 8, 0, Math.PI); ctx.fill();
+        ctx.restore(); return;
+      }
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(-11, -6 + stride, 8, 16);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(-11, (stride < 0 ? -9 + stride : 8 + stride), 8, 5);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(3, -6 - stride, 8, 16);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(3, (-stride < 0 ? -9 - stride : 8 - stride), 8, 5);
+      ctx.fillStyle = suitColor;
+      ctx.fillRect(-20, -6 - stride * 0.7, 6, 14);
+      ctx.fillStyle = "#fbbf24"; ctx.fillRect(-19, -8 - stride * 0.7, 4, 4);
+      ctx.fillStyle = suitColor; ctx.fillRect(14, -6 + stride * 0.7, 6, 14);
+      ctx.fillStyle = "#fbbf24"; ctx.fillRect(15, -8 + stride * 0.7, 4, 4);
+      ctx.fillStyle = suitColor; ctx.strokeStyle = suitOutline; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(0, 0, 16, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.moveTo(-6, -8); ctx.lineTo(6, -8); ctx.lineTo(0, -3);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#ef4444"; ctx.fillRect(-1.5, -10, 3, 5);
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(0, -3, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.beginPath(); ctx.arc(0, 0, 8.5, -0.2, Math.PI + 0.2); ctx.fill();
+      ctx.restore();
+    }
+    function drawCar(x, y, w, h, isBoosting = false) {
+      const left = x - w / 2, top = y - h / 2;
+      if (isBoosting) {
+        ctx.fillStyle = "#f97316"; ctx.fillRect(left + 8, top + h, w - 16, 24);
+        ctx.fillStyle = "#fde047"; ctx.fillRect(left + 14, top + h, w - 28, 14);
+      }
+      ctx.fillStyle = "#111827";
+      ctx.fillRect(left - 6, top + 8, 6, 14); ctx.fillRect(left + w, top + 8, 6, 14);
+      ctx.fillRect(left - 6, top + h - 22, 6, 14); ctx.fillRect(left + w, top + h - 22, 6, 14);
+      ctx.fillStyle = "#3b82f6"; ctx.fillRect(left, top, w, h);
+      ctx.strokeStyle = "#bfdbfe"; ctx.lineWidth = 2; ctx.strokeRect(left, top, w, h);
+      ctx.fillStyle = "#1e3a8a"; ctx.fillRect(left + 6, top + 14, w - 12, 18);
+      ctx.fillStyle = "#fde047";
+      ctx.fillRect(left + 4, top + 2, 8, 4); ctx.fillRect(left + w - 12, top + 2, 8, 4);
+    }
+    function drawScenery(scrollOffset) {
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, 54, CANVAS_H); ctx.fillRect(CANVAS_W - 54, 0, 54, CANVAS_H);
+      ctx.strokeStyle = "#4b5563"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(54, 0); ctx.lineTo(54, CANVAS_H);
+      ctx.moveTo(CANVAS_W - 54, 0); ctx.lineTo(CANVAS_W - 54, CANVAS_H);
+      ctx.stroke();
+      const spacing = 140;
+      const totalElements = Math.ceil(CANVAS_H / spacing) + 2;
+      const startY = (scrollOffset % spacing) - spacing;
+      for (let i = 0; i < totalElements; i++) {
+        const currentY = startY + (i * spacing);
+        ctx.fillStyle = "#1e293b"; ctx.fillRect(6, currentY, 42, 110);
+        ctx.strokeStyle = "#334155"; ctx.lineWidth = 2; ctx.strokeRect(6, currentY, 42, 110);
+        ctx.fillStyle = "#475569";
+        ctx.fillRect(12, currentY + 15, 16, 22); ctx.fillRect(12, currentY + 60, 20, 28);
+        ctx.fillStyle = "#64748b"; ctx.fillRect(48, currentY + 45, 3, 30);
+        ctx.fillStyle = "#eab308"; ctx.beginPath(); ctx.arc(49, currentY + 45, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#1e293b"; ctx.fillRect(CANVAS_W - 48, currentY + 30, 42, 110);
+        ctx.strokeStyle = "#334155"; ctx.strokeRect(CANVAS_W - 48, currentY + 30, 42, 110);
+        ctx.fillStyle = "#475569"; ctx.fillRect(CANVAS_W - 40, currentY + 45, 18, 24);
+        ctx.fillStyle = "#334155"; ctx.fillRect(CANVAS_W - 42, currentY + 90, 22, 18);
+        ctx.fillStyle = "#64748b"; ctx.fillRect(CANVAS_W - 51, currentY + 75, 3, 30);
+        ctx.fillStyle = "#eab308"; ctx.beginPath(); ctx.arc(CANVAS_W - 50, currentY + 75, 4.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function drawPowerupIcon(cx, cy, type, size) {
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(size / 24, size / 24);
+      if (type === "shield") {
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = i * Math.PI / 3 - Math.PI / 6;
+          const x = Math.cos(a) * 12, y = Math.sin(a) * 12;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(8, 145, 178, 0.9)"; ctx.fill();
+        ctx.strokeStyle = "#67e8f9"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#cffafe";
+        ctx.beginPath();
+        ctx.moveTo(0, -7); ctx.lineTo(5, -3); ctx.lineTo(5, 3);
+        ctx.lineTo(0, 7); ctx.lineTo(-5, 3); ctx.lineTo(-5, -3);
+        ctx.closePath(); ctx.fill();
+      } else if (type === "magnet") {
+        ctx.strokeStyle = "#f472b6"; ctx.lineWidth = 5; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(0, 0, 8, Math.PI, 0); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-8, 0); ctx.lineTo(-8, 8);
+        ctx.moveTo(8, 0); ctx.lineTo(8, 8); ctx.stroke();
+        ctx.fillStyle = "#e5e7eb";
+        ctx.fillRect(-11, 6, 6, 4); ctx.fillRect(5, 6, 6, 4);
+      } else if (type === "coin2x") {
+        ctx.fillStyle = "#eab308"; ctx.strokeStyle = "#fde047"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#111827"; ctx.font = "bold 13px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("×2", 0, 1);
+      }
+      ctx.restore();
+    }
+    function drawPowerupPickup(b) {
+      const bob = Math.sin(performance.now() / 300 + b.bobSeed) * 3;
+      const cx = b.x, cy = b.y + bob;
+      const glowColor = b.powerType === "shield" ? "rgba(34, 211, 238, 0.75)"
+                      : b.powerType === "magnet" ? "rgba(244, 114, 182, 0.75)"
+                      : "rgba(234, 179, 8, 0.75)";
+      const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, 32);
+      g.addColorStop(0, glowColor); g.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, 32, 0, Math.PI * 2); ctx.fill();
+      drawPowerupIcon(cx, cy, b.powerType, 26);
+    }
+    function drawActivePowerups() {
+      const active = [];
+      if (player.shield) active.push({ type: "shield" });
+      if (player.magnetTimer > 0) active.push({ type: "magnet", pct: player.magnetTimer / POWERUP_DURATION });
+      if (player.coinDoubleTimer > 0) active.push({ type: "coin2x", pct: player.coinDoubleTimer / POWERUP_DURATION });
+      if (active.length === 0) return;
+      const size = 22, gap = 32;
+      const totalWidth = active.length * gap - (gap - size);
+      let x = (CANVAS_W - totalWidth) / 2 + size / 2;
+      const y = 26;
+      for (const p of active) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+        ctx.beginPath(); ctx.arc(x, y, size / 2 + 4, 0, Math.PI * 2); ctx.fill();
+        drawPowerupIcon(x, y, p.type, size);
+        if (p.pct !== undefined) {
+          const barW = 22;
+          ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+          ctx.fillRect(x - barW / 2, y + size / 2 + 5, barW, 3);
+          ctx.fillStyle = "#67e8f9";
+          ctx.fillRect(x - barW / 2, y + size / 2 + 5, barW * p.pct, 3);
+        }
+        x += gap;
+      }
+    }
+    function drawPortal(cx, cy, open, angle, intensity) {
+      if (open <= 0.01) return;
+      const R = 126 * open; const squash = 0.82;
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(1, squash);
+      const glow = ctx.createRadialGradient(0, 0, R * 0.6, 0, 0, R * 1.4);
+      glow.addColorStop(0, `rgba(168, 85, 247, ${0.55 + intensity * 0.3})`);
+      glow.addColorStop(1, "rgba(168, 85, 247, 0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(0, 0, R * 1.4, 0, Math.PI * 2); ctx.fill();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip();
+      const base = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+      base.addColorStop(0, "#05010f"); base.addColorStop(0.45, "#2e1065"); base.addColorStop(1, "#6d28d9");
+      ctx.fillStyle = base; ctx.fillRect(-R, -R, R * 2, R * 2);
+      for (let k = 0; k < 6; k++) {
+        const phase = (angle * 0.3 + k / 6) % 1;
+        const rr = R * (1 - phase);
+        ctx.strokeStyle = `rgba(103, 232, 249, ${0.4 * (1 - phase)})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+      }
+      const arms = 5; ctx.lineCap = "round";
+      for (let a = 0; a < arms; a++) {
+        const hue = 185 + a * 28;
+        ctx.beginPath();
+        for (let i = 0; i <= 48; i++) {
+          const f = i / 48; const r = f * R;
+          const ang = angle + a * (Math.PI * 2 / arms) + (1 - f) * 6;
+          const x = Math.cos(ang) * r, y = Math.sin(ang) * r;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.22)`; ctx.lineWidth = 16; ctx.stroke();
+        ctx.strokeStyle = `hsla(${hue}, 100%, 75%, 0.9)`; ctx.lineWidth = 4; ctx.stroke();
+      }
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.28);
+      core.addColorStop(0, `rgba(255, 255, 255, ${0.6 + intensity * 0.4})`);
+      core.addColorStop(0.4, "rgba(196, 181, 253, 0.5)");
+      core.addColorStop(1, "rgba(196, 181, 253, 0)");
+      ctx.fillStyle = core;
+      ctx.beginPath(); ctx.arc(0, 0, R * 0.28, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      const pulse = 1 + Math.sin(angle * 4) * 0.25;
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.9)"; ctx.lineWidth = 6 * pulse;
+      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, Math.PI * 2); ctx.stroke();
+      for (let i = 0; i < 14; i++) {
+        const ang = -angle * 1.5 + i * (Math.PI * 2 / 14);
+        const rr = R * (1.06 + 0.05 * Math.sin(angle * 3 + i));
+        ctx.fillStyle = i % 2 ? "#67e8f9" : "#f0abfc";
+        ctx.beginPath(); ctx.arc(Math.cos(ang) * rr, Math.sin(ang) * rr, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    function drawCutsceneRunner(x, y, rotation, scale, flipY, alpha) {
+      const fy = Math.abs(flipY) < 0.08 ? (flipY < 0 ? -0.08 : 0.08) : flipY;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(scale, scale * fy);
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      drawTopDownRunner(0, 0, "running", false, 0);
+      ctx.restore();
+    }
 
-        ctx.fillStyle = suitColor;
-        ctx.fillRect(-15, -4, 30, 18);
-        ctx.fillStyle = skinColor;
+    // ================= PORTAL / MISSION =================
+    function startPortal() {
+      portalPhase = "approach";
+      portal.y = -140; portal.open = 0; portal.angle = 0;
+      portal.spinSpeed = 0.05; portalIntensity = 0;
+      player.hits = 0; player.recoveryTimer = 0;
+      chaser.targetY = 620;
+      dangerEl.innerText = "PORTAL!";
+      dangerEl.style.color = "#c084fc";
+    }
+    function beginPortalJump() {
+      portalPhase = "jump"; cutTimer = 0;
+      jumpStart = { x: player.x, y: player.y };
+      player.state = "running"; player.actionTimer = 0; player.invincibleTimer = 0;
+    }
+    function finishMission() {
+      portalPhase = "done"; portal.spinSpeed = 0.06; portalIntensity = 0.6;
+      const finalD = Math.floor(score / 10);
+      const best = saveBestDistance(finalD);
+      finalDistanceEl.innerText = finalD;
+      finalCoinsEl.innerText = coinCount;
+      bestOnMissionEl.innerText = best;
+      cutsceneActive = true; cutsceneFrame = 0;
+      thwoopPlayed = false; lastWhooshSwingIdx = -1; spiderSensePlayed = false;
+    }
+    function runPortalCutscene() {
+      portal.angle += portal.spinSpeed;
+      gameSpeed = Math.max(0.8, gameSpeed * 0.985);
+      chaser.x += (player.x - chaser.x) * 0.15;
+      chaser.y += (chaser.targetY - chaser.y) * 0.1;
+      drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
+      if (portalPhase === "jump") {
+        cutTimer++;
+        const t = Math.min(1, cutTimer / JUMP_FRAMES);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const arc = Math.sin(Math.PI * t);
+        const px = jumpStart.x + (portal.x - jumpStart.x) * e;
+        const groundY = jumpStart.y + (portal.y - jumpStart.y) * e;
+        ctx.fillStyle = `rgba(0, 0, 0, ${0.35 * (1 - t)})`;
+        ctx.beginPath(); ctx.ellipse(px, groundY + 8, 16 - arc * 4, 10 - arc * 2, 0, 0, Math.PI * 2); ctx.fill();
+        const flip = Math.cos(t * Math.PI * 2);
+        drawCutsceneRunner(px, groundY - arc * 70, 0, 1 + arc * 0.45, flip, 1);
+        portal.spinSpeed = 0.05 + t * 0.1; portalIntensity = t * 0.5;
+        if (cutTimer >= JUMP_FRAMES) { portalPhase = "enter"; cutTimer = 0; }
+      } else if (portalPhase === "enter") {
+        cutTimer++;
+        const u = Math.min(1, cutTimer / ENTER_FRAMES);
+        const spin = Math.PI * 2 + u * Math.PI * 5;
+        const swirl = (1 - u) * 12;
+        const px = portal.x + Math.cos(spin) * swirl;
+        const py = portal.y + Math.sin(spin) * swirl * 0.8;
+        drawCutsceneRunner(px, py, spin, 1 - 0.92 * u, 1, 1 - u);
+        portal.spinSpeed = 0.15 + u * 0.2; portalIntensity = 0.5 + u * 0.5;
+        flashAlpha = u > 0.55 ? ((u - 0.55) / 0.45) * 0.85 : 0;
+        if (cutTimer >= ENTER_FRAMES) finishMission();
+      } else if (portalPhase === "done") { flashAlpha *= 0.96; }
+      if (flashAlpha > 0.01) {
+        ctx.fillStyle = `rgba(245, 235, 255, ${flashAlpha})`;
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      }
+    }
+
+    // ================= ORIGIN CUTSCENE =================
+    function endCutscene() {
+      cutsceneActive = false;
+      missionScreen.style.display = "flex";
+      lockRestart();
+    }
+    function updateOriginCutscene() {
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+      cutsceneFrame++;
+      if (cutsceneFrame < CUT.lab.end) drawLabScene(cutsceneFrame);
+      else if (cutsceneFrame < CUT.transform.end) drawTransformScene(cutsceneFrame - CUT.transform.start);
+      else if (cutsceneFrame < CUT.escape.end) drawEscapeRunScene(cutsceneFrame - CUT.escape.start);
+      else if (cutsceneFrame < CUT.fall.end) drawSwingScene(cutsceneFrame - CUT.fall.start);
+      else if (cutsceneFrame < CUT.title.end) drawTitleCard(cutsceneFrame - CUT.title.start);
+      else { endCutscene(); return; }
+      if (cutsceneFrame < CUT.title.start) {
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.font = "10px monospace";
+        ctx.textAlign = "right"; ctx.textBaseline = "bottom";
+        ctx.fillText("TAP TO SKIP ▸", CANVAS_W - 12, CANVAS_H - 12);
+      }
+    }
+
+    function drawLabBackground() {
+      const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      grad.addColorStop(0, "#0a0a15"); grad.addColorStop(1, "#1a0a1a");
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = "rgba(60, 80, 120, 0.15)";
+      ctx.beginPath();
+      ctx.moveTo(140, 0); ctx.lineTo(220, 0);
+      ctx.lineTo(280, 340); ctx.lineTo(80, 340);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#15152a";
+      ctx.fillRect(20, 200, 40, 140); ctx.fillRect(300, 180, 50, 160);
+      ctx.fillStyle = "#25254a";
+      ctx.fillRect(25, 210, 12, 10); ctx.fillRect(45, 240, 10, 8);
+      ctx.fillRect(310, 200, 15, 12); ctx.fillRect(330, 230, 12, 10);
+      ctx.fillStyle = "#2a2a3a"; ctx.fillRect(80, 380, 200, 12);
+      ctx.fillStyle = "#1a1a2a";
+      ctx.fillRect(90, 392, 8, 40); ctx.fillRect(262, 392, 8, 40);
+    }
+    function drawLabScene(f) {
+      drawLabBackground();
+      if (!thwoopPlayed && f >= 80) { playThwoop(); thwoopPlayed = true; }
+      let shakeX = 0;
+      if (f > 100 && f < 180) shakeX = Math.sin(f * 1.5) * 3;
+      ctx.save();
+      ctx.translate(180 + shakeX, 360);
+      ctx.fillStyle = "#c8c8d0";
+      ctx.beginPath(); ctx.ellipse(0, -8, 55, 16, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f5d5a8";
+      ctx.beginPath(); ctx.arc(-55, -8, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.beginPath(); ctx.arc(-55, -12, 14, Math.PI, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#444";
+      ctx.fillRect(-30, -22, 6, 28); ctx.fillRect(0, -22, 6, 28); ctx.fillRect(30, -22, 6, 28);
+      ctx.fillStyle = "#c8c8d0"; ctx.fillRect(45, -18, 55, 10);
+      ctx.restore();
+      const syringeY = f < 40 ? 100 : f < 100 ? 100 + (f - 40) * 5 : 400;
+      const clampY = Math.min(syringeY, 300);
+      ctx.fillStyle = "#3a3a4a"; ctx.fillRect(178, 60, 6, clampY - 60);
+      ctx.fillStyle = "#1a1a2a"; ctx.fillRect(172, clampY, 18, 40);
+      ctx.strokeStyle = "#6a6a7a"; ctx.lineWidth = 1.5; ctx.strokeRect(172, clampY, 18, 40);
+      if (f > 50) {
+        const liquidAmt = Math.min(1, (f - 50) / 60);
+        ctx.fillStyle = `rgba(220, 30, 50, 0.8)`;
+        ctx.fillRect(174, clampY + 38 - liquidAmt * 36, 14, liquidAmt * 36);
+      }
+      ctx.fillStyle = "#8a8a9a"; ctx.fillRect(176, clampY - 5, 10, 6);
+      ctx.fillStyle = "#a0a0b0"; ctx.fillRect(179, clampY + 40, 2, 20);
+      if (f > 100 && f < 180) {
+        const pulse = Math.sin(f * 0.4) * 0.5 + 0.5;
+        const vg = ctx.createRadialGradient(CANVAS_W/2, CANVAS_H/2, 100, CANVAS_W/2, CANVAS_H/2, 350);
+        vg.addColorStop(0, "rgba(220, 30, 50, 0)");
+        vg.addColorStop(1, `rgba(220, 30, 50, ${0.5 * pulse})`);
+        ctx.fillStyle = vg; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        for (let i = 0; i < 8; i++) {
+          const a = (f * 0.1 + i * Math.PI / 4);
+          const r1 = 60 + Math.sin(f * 0.3 + i) * 20;
+          const r2 = 100 + Math.sin(f * 0.3 + i + 1) * 30;
+          ctx.strokeStyle = `rgba(255, 100, 100, ${0.6 * pulse})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(180 + Math.cos(a) * r1, 355 + Math.sin(a) * r1 * 0.5);
+          ctx.lineTo(180 + Math.cos(a) * r2, 355 + Math.sin(a) * r2 * 0.5);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.sin(f * 0.1) * 0.1})`;
+      ctx.font = "10px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText("SECTOR 7 — CLASSIFIED LAB", CANVAS_W / 2, 30);
+      ctx.textBaseline = "bottom";
+      if (f < 60) {
+        ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "11px monospace";
+        ctx.fillText("THE EXPERIMENT BEGINS...", CANVAS_W / 2, CANVAS_H - 30);
+      } else if (f < 130) {
+        ctx.fillStyle = "rgba(255,150,150,0.8)"; ctx.font = "11px monospace";
+        ctx.fillText("SPIDER SERUM INJECTED", CANVAS_W / 2, CANVAS_H - 30);
+      } else {
+        ctx.fillStyle = "rgba(255,100,100,0.9)"; ctx.font = "bold 11px monospace";
+        ctx.fillText("AGONY...", CANVAS_W / 2, CANVAS_H - 30);
+      }
+    }
+    function drawTransformScene(f) {
+      drawLabBackground();
+      const flash = Math.sin(f * 0.15) * 0.4 + 0.5;
+      ctx.fillStyle = `rgba(255, 255, 255, ${flash * 0.15})`;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      const progress = Math.min(1, f / 40);
+      const bodyY = 360 - progress * 100;
+      ctx.save(); ctx.translate(180, bodyY);
+      ctx.lineWidth = 8; ctx.strokeStyle = "#c8c8d0"; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-8, 10); ctx.lineTo(-10, 35);
+      ctx.moveTo(8, 10); ctx.lineTo(10, 35); ctx.stroke();
+      ctx.fillStyle = "#c8c8d0"; ctx.fillRect(-12, -30, 24, 40);
+      ctx.fillStyle = "#444";
+      ctx.fillRect(-40, 30, 12, 4); ctx.fillRect(30, 35, 14, 4);
+      ctx.fillStyle = "#f5d5a8";
+      ctx.beginPath(); ctx.arc(0, -48, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#111827";
+      ctx.beginPath(); ctx.arc(0, -53, 15, Math.PI, Math.PI * 2); ctx.fill();
+      const musclePulse = Math.sin(f * 0.4) * 2;
+      ctx.fillStyle = "#d8d8e0";
+      ctx.beginPath(); ctx.ellipse(-10, -20, 8 + musclePulse, 12 + musclePulse, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(10, -20, 8 + musclePulse, 12 + musclePulse, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#c8c8d0"; ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-12, -25); ctx.lineTo(-28, -50);
+      ctx.moveTo(12, -25); ctx.lineTo(28, -50); ctx.stroke();
+      if (f > 20) {
+        ctx.fillStyle = `rgba(255, 60, 60, ${(f - 20) / 30})`;
+        ctx.beginPath(); ctx.arc(-5, -50, 2, 0, Math.PI * 2); ctx.arc(5, -50, 2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+      if (f > 10 && f < 60) {
+        const burstT = (f - 10) / 50;
+        ctx.strokeStyle = `rgba(255, 200, 100, ${1 - burstT})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(180, bodyY, burstT * 150, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.fillStyle = "rgba(255, 220, 100, 0.9)";
+      ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText("POWER AWAKENS...", CANVAS_W / 2, CANVAS_H - 30);
+    }
+    function drawEscapeRunScene(f) {
+      const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      grad.addColorStop(0, "#0a0a1a"); grad.addColorStop(1, "#1a0a2a");
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = "#15152a";
+      ctx.fillRect(0, 0, 54, CANVAS_H); ctx.fillRect(CANVAS_W - 54, 0, 54, CANVAS_H);
+      const offset = (f * 8) % 100;
+      for (let i = -1; i < Math.ceil(CANVAS_H / 100) + 1; i++) {
+        const wy = i * 100 + offset;
+        ctx.fillStyle = "#1f1f3a";
+        ctx.fillRect(10, wy, 34, 70); ctx.fillRect(CANVAS_W - 44, wy + 20, 34, 70);
+      }
+      for (let i = -1; i < Math.ceil(CANVAS_H / 60) + 1; i++) {
+        const ty = i * 60 + ((f * 8) % 60);
+        ctx.strokeStyle = "#2a2a4a"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(54, ty); ctx.lineTo(CANVAS_W - 54, ty); ctx.stroke();
+      }
+      const portalY = -140 + (f / 100) * 300;
+      const portalR = 60;
+      if (portalY > -100) {
+        const glow = ctx.createRadialGradient(CANVAS_W/2, portalY, portalR * 0.5, CANVAS_W/2, portalY, portalR * 1.5);
+        glow.addColorStop(0, "rgba(168, 85, 247, 0.9)");
+        glow.addColorStop(1, "rgba(168, 85, 247, 0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(CANVAS_W/2, portalY, portalR * 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#1a0033";
+        ctx.beginPath(); ctx.ellipse(CANVAS_W/2, portalY, portalR, portalR * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#a855f7"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.strokeStyle = "#67e8f9"; ctx.lineWidth = 2;
+        for (let k = 0; k < 3; k++) {
+          const a = f * 0.2 + k * Math.PI * 2 / 3;
+          ctx.beginPath(); ctx.arc(CANVAS_W/2, portalY, portalR * 0.6, a, a + Math.PI); ctx.stroke();
+        }
+      }
+      let charY = 400 - Math.max(0, f - 60) * 4;
+      let flipAngle = 0, charScale = 1, charAlpha = 1;
+      if (f >= 80) {
+        const flipT = Math.min(1, (f - 80) / 50);
+        flipAngle = flipT * Math.PI * 2;
+        charScale = 1 - flipT * 0.7;
+        charAlpha = 1 - flipT * 0.9;
+        charY = Math.min(charY, portalY + 20);
+      }
+      if (f < 80) {
+        drawTopDownRunner(CANVAS_W/2, charY, "running", false, f * 0.4);
+      } else {
+        ctx.save();
+        ctx.globalAlpha = charAlpha;
+        ctx.translate(CANVAS_W/2, charY);
+        ctx.rotate(flipAngle);
+        ctx.scale(charScale, charScale);
+        drawTopDownRunner(0, 0, "running", false, f * 0.6);
+        ctx.restore();
+      }
+      if (f > 120) {
+        const flash = Math.min(1, (f - 120) / 15);
+        ctx.fillStyle = `rgba(255, 240, 255, ${flash})`;
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      }
+      ctx.fillStyle = "rgba(255, 200, 100, 0.9)";
+      ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      if (f < 80) ctx.fillText("ESCAPE!", CANVAS_W/2, 20);
+      else ctx.fillText("INTO THE PORTAL!", CANVAS_W/2, 20);
+    }
+
+    // ================= SCENE 4: SLENDER GREEN SPIDEY + TWO-HANDED WEBS =================
+    // Slender side-view Green Nigerian Spider-Man matching the reference image.
+    function drawSpideySide(x, y, params) {
+      const GREEN = "#15803d";      // Main dark green
+      const LIGHT_GREEN = "#22c55e"; // Bright green accents
+      const WHITE = "#ffffff";
+
+      ctx.save();
+      ctx.translate(x, y);
+      if (params.rotation) ctx.rotate(params.rotation);
+      if (params.scale && params.scale !== 1) ctx.scale(params.scale, params.scale);
+
+      // Curl pose (backflip tuck)
+      if (params.curl && params.curl > 0.5) {
+        ctx.fillStyle = GREEN;
+        ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = WHITE; ctx.lineWidth = 1.5; ctx.stroke();
+        
+        // White swirl patterns on back
+        ctx.strokeStyle = WHITE; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(-4, -4, 2, 0, Math.PI*1.5); ctx.stroke();
+        ctx.beginPath(); ctx.arc(4, 3, 2, 0, Math.PI*1.5); ctx.stroke();
+
+        // Tucked limbs
+        ctx.strokeStyle = LIGHT_GREEN; ctx.lineWidth = 3.5; ctx.lineCap = "round";
         ctx.beginPath();
-        ctx.arc(0, 14, 9, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = hairColor;
-        ctx.beginPath();
-        ctx.arc(0, 15, 8, 0, Math.PI);
-        ctx.fill();
+        ctx.moveTo(-6, -6); ctx.lineTo(-11, -3);
+        ctx.moveTo(6, -6); ctx.lineTo(11, -3);
+        ctx.moveTo(-6, 6); ctx.lineTo(-11, 10);
+        ctx.moveTo(6, 6); ctx.lineTo(11, 10);
+        ctx.stroke();
+
         ctx.restore();
         return;
       }
 
-      ctx.fillStyle = pantsColor;
-      ctx.fillRect(-11, -6 + stride, 8, 16);
-      ctx.fillStyle = shoeColor;
-      ctx.fillRect(-11, (stride < 0 ? -9 + stride : 8 + stride), 8, 5);
+      // Legs
+      const legLen = 20;
+      const lLeg = params.leftLegAngle ?? Math.PI / 2;
+      const rLeg = params.rightLegAngle ?? Math.PI / 2;
+      
+      const lEndX = -2.5 + Math.cos(lLeg) * legLen;
+      const lEndY = 8 + Math.sin(lLeg) * legLen;
+      const rEndX = 2.5 + Math.cos(rLeg) * legLen;
+      const rEndY = 8 + Math.sin(rLeg) * legLen;
 
-      ctx.fillStyle = pantsColor;
-      ctx.fillRect(3, -6 - stride, 8, 16);
-      ctx.fillStyle = shoeColor;
-      ctx.fillRect(3, (-stride < 0 ? -9 - stride : 8 - stride), 8, 5);
+      // Curvy leg bends based on physics
+      const bendL = params.leftLegBend || 0;
+      const bendR = params.rightLegBend || 0;
+      const ctrlLX = -2.5 - bendL;
+      const ctrlLY = 8 + 15;
+      const ctrlRX = 2.5 - bendR;
+      const ctrlRY = 8 + 15;
 
-      ctx.fillStyle = suitColor;
-      ctx.fillRect(-20, -6 - stride * 0.7, 6, 14);
-      ctx.fillStyle = skinColor;
-      ctx.fillRect(-19, -8 - stride * 0.7, 4, 4);
+      // Leg outline / inner white
+      ctx.strokeStyle = WHITE; ctx.lineWidth = 5; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(-2.5, 8); ctx.quadraticCurveTo(ctrlLX, ctrlLY, lEndX, lEndY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2.5, 8); ctx.quadraticCurveTo(ctrlRX, ctrlRY, rEndX, rEndY); ctx.stroke();
 
-      ctx.fillStyle = suitColor;
-      ctx.fillRect(14, -6 + stride * 0.7, 6, 14);
-      ctx.fillStyle = skinColor;
-      ctx.fillRect(15, -8 + stride * 0.7, 4, 4);
+      // Green outer leg and boots
+      ctx.strokeStyle = GREEN; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.moveTo(-3.5, 8); ctx.quadraticCurveTo(ctrlLX - 1, ctrlLY, lEndX - 1, lEndY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3.5, 8); ctx.quadraticCurveTo(ctrlRX + 1, ctrlRY, rEndX + 1, rEndY); ctx.stroke();
+      
+      // Boots (thicker end)
+      ctx.strokeStyle = LIGHT_GREEN; ctx.lineWidth = 4; 
+      ctx.beginPath(); ctx.moveTo(lEndX - Math.cos(lLeg)*5, lEndY - Math.sin(lLeg)*5); ctx.lineTo(lEndX, lEndY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(rEndX - Math.cos(rLeg)*5, rEndY - Math.sin(rLeg)*5); ctx.lineTo(rEndX, rEndY); ctx.stroke();
 
-      ctx.fillStyle = suitColor;
-      ctx.strokeStyle = suitOutline;
-      ctx.lineWidth = 2;
+      // Torso base (White)
+      ctx.fillStyle = WHITE;
+      ctx.beginPath(); ctx.ellipse(0, -2, 6, 13, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Green chest diamond/chevron
+      ctx.fillStyle = GREEN;
       ctx.beginPath();
-      ctx.ellipse(0, 0, 16, 10, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.moveTo(-6, -8);
-      ctx.lineTo(6, -8);
-      ctx.lineTo(0, -3);
+      ctx.moveTo(-6, -10);
+      ctx.lineTo(6, -10);
+      ctx.lineTo(0, 3);
       ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = "#ef4444";
-      ctx.fillRect(-1.5, -10, 3, 5);
-
-      ctx.fillStyle = skinColor;
+      // Eagle / Shield emblem (White)
+      ctx.fillStyle = WHITE;
       ctx.beginPath();
-      ctx.arc(0, -3, 8, 0, Math.PI * 2);
+      ctx.moveTo(0, -9);
+      ctx.lineTo(-3, -5);
+      ctx.lineTo(-1, -6);
+      ctx.lineTo(0, -4);
+      ctx.lineTo(1, -6);
+      ctx.lineTo(3, -5);
+      ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = hairColor;
+      // Green Belt
+      ctx.fillStyle = GREEN;
+      ctx.fillRect(-6, 6, 12, 3.5);
+      // Buckle
+      ctx.fillStyle = LIGHT_GREEN;
+      ctx.fillRect(-2, 6, 4, 3.5);
+      ctx.fillStyle = "#ef4444"; // tiny red detail
+      ctx.fillRect(-0.5, 7, 1, 1.5);
+
+      // Arms
+      const armLen = 16;
+      const lArm = params.leftArmAngle ?? Math.PI / 2;
+      const rArm = params.rightArmAngle ?? Math.PI / 2;
+      const lHandX = -5 + Math.cos(lArm) * armLen;
+      const lHandY = -2 + Math.sin(lArm) * armLen;
+      const rHandX = 5 + Math.cos(rArm) * armLen;
+      const rHandY = -2 + Math.sin(rArm) * armLen;
+
+      // White arm under-layer
+      ctx.strokeStyle = WHITE; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(-5, -2); ctx.lineTo(lHandX, lHandY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(5, -2); ctx.lineTo(rHandX, rHandY); ctx.stroke();
+
+      // Green outer arm/gloves
+      ctx.strokeStyle = GREEN; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(lHandX - 1, lHandY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(6, -2); ctx.lineTo(rHandX + 1, rHandY); ctx.stroke();
+      
+      ctx.fillStyle = LIGHT_GREEN;
+      ctx.beginPath(); ctx.arc(lHandX, lHandY, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rHandX, rHandY, 2.5, 0, Math.PI*2); ctx.fill();
+
+      // Head
+      ctx.fillStyle = GREEN;
+      ctx.beginPath(); ctx.arc(0, -19, 6.5, 0, Math.PI * 2); ctx.fill();
+
+      // White spiral motifs on mask
+      ctx.strokeStyle = WHITE; ctx.lineWidth = 0.8;
+      for(let i=0; i<4; i++) {
+        ctx.beginPath();
+        ctx.arc(-3 + (i%2)*5, -23 + Math.floor(i/2)*3, 1.5, 0, Math.PI*1.5);
+        ctx.stroke();
+      }
+
+      // Single large white eye
+      ctx.fillStyle = WHITE;
       ctx.beginPath();
-      ctx.arc(0, 0, 8.5, -0.2, Math.PI + 0.2);
+      ctx.ellipse(2, -19, 3.5, 2.5, -0.2, 0, Math.PI*2);
       ctx.fill();
 
       ctx.restore();
     }
 
-    function drawCar(x, y, w, h, isBoosting = false) {
-      const left = x - w / 2;
-      const top = y - h / 2;
+    function drawBuildingSide(bx, topY, w, h, seedIdx) {
+      const isAnchor = ANCHOR_SEED_IDXS.includes(seedIdx);
+      const baseColor = isAnchor ? "#1a2030" : "#15152a";
+      const windowColor = isAnchor ? "rgba(134, 239, 172, 0.85)" : "rgba(253, 224, 71, 0.9)";
 
-      if (isBoosting) {
-        ctx.fillStyle = "#f97316";
-        ctx.fillRect(left + 8, top + h, w - 16, 24);
-        ctx.fillStyle = "#fde047";
-        ctx.fillRect(left + 14, top + h, w - 28, 14);
+      ctx.fillStyle = baseColor;
+      ctx.fillRect(bx, topY, w, h);
+      ctx.fillStyle = isAnchor ? "#22c55e" : "#2a2a4a";
+      ctx.fillRect(bx, topY, w, 3); // green roof edge for anchors
+
+      for (let wy = topY + 14; wy < topY + h - 12; wy += 18) {
+        for (let wx = bx + 8; wx < bx + w - 8; wx += 12) {
+          const winSeed = (Math.floor(wy) * 7 + Math.floor(wx) * 11 + seedIdx * 3) % 5;
+          if (winSeed < 2) {
+            ctx.fillStyle = windowColor;
+            ctx.fillRect(wx, wy, 5, 7);
+          } else {
+            ctx.fillStyle = "rgba(20, 20, 40, 0.6)";
+            ctx.fillRect(wx, wy, 5, 7);
+          }
+        }
       }
-
-      ctx.fillStyle = "#111827";
-      ctx.fillRect(left - 6, top + 8, 6, 14);
-      ctx.fillRect(left + w, top + 8, 6, 14);
-      ctx.fillRect(left - 6, top + h - 22, 6, 14);
-      ctx.fillRect(left + w, top + h - 22, 6, 14);
-
-      ctx.fillStyle = "#3b82f6";
-      ctx.fillRect(left, top, w, h);
-      ctx.strokeStyle = "#bfdbfe";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(left, top, w, h);
-
-      ctx.fillStyle = "#1e3a8a";
-      ctx.fillRect(left + 6, top + 14, w - 12, 18);
-
-      ctx.fillStyle = "#fde047";
-      ctx.fillRect(left + 4, top + 2, 8, 4);
-      ctx.fillRect(left + w - 12, top + 2, 8, 4);
     }
 
-    function drawScenery(scrollOffset) {
-      ctx.fillStyle = "#0f172a";
-      ctx.fillRect(0, 0, 54, canvas.height);
-      ctx.fillRect(canvas.width - 54, 0, 54, canvas.height);
+    function drawSwingScene(f) {
+      const inFall = f >= S4.FALL_START && f < S4.FALL_END;
+      const inUnlock = f >= S4.UNLOCK_START && f < S4.UNLOCK_END;
+      const inSwing = f >= S4.SWING_START && f < S4.SWING_END;
+      const inBackflip = f >= S4.BACKFLIP_START && f < S4.BACKFLIP_END;
+      const inLanding = f >= S4.LANDING_START && f < S4.LANDING_END;
+      const inStand = f >= S4.STAND_START && f < S4.STAND_END;
+      const inHold = f >= S4.STAND_END;
 
-      ctx.strokeStyle = "#4b5563";
+      const A1 = swingAnchors[0];
+      const PRE_SWING_X = A1.worldX - SWING_ROPE * Math.sin(SWING_ANGLE_MAX);
+      const PRE_SWING_Y = A1.worldY + SWING_ROPE * Math.cos(SWING_ANGLE_MAX);
+
+      let charWorldX = 0, charWorldY = 0;
+      let charPose = {};
+      let activeAnchorWorld = null;
+      let currentSwingIdx = -1;
+      let swingLocalT = 0;
+
+      if (inFall) {
+        const t = (f - S4.FALL_START) / (S4.FALL_END - S4.FALL_START);
+        charWorldX = 180 + t * (PRE_SWING_X - 180);
+        charWorldY = -150 + t * (PRE_SWING_Y + 150);
+        charPose = {
+          rotation: t * Math.PI * 0.5,
+          leftArmAngle: -Math.PI/2 - 0.35,
+          rightArmAngle: -Math.PI/2 + 0.35,
+          leftLegAngle: Math.PI/2 + 0.25,
+          rightLegAngle: Math.PI/2 - 0.25
+        };
+      } else if (inUnlock) {
+        const t = (f - S4.UNLOCK_START) / (S4.UNLOCK_END - S4.UNLOCK_START);
+        charWorldX = PRE_SWING_X;
+        charWorldY = PRE_SWING_Y;
+        if (!spiderSensePlayed) { playSpiderSense(); spiderSensePlayed = true; }
+        charPose = {
+          rotation: 0,
+          leftArmAngle: -Math.PI/2,
+          rightArmAngle: -Math.PI/2,
+          leftLegAngle: Math.PI/2,
+          rightLegAngle: Math.PI/2
+        };
+      } else if (inSwing) {
+        const swingFrame = f - S4.SWING_START;
+        currentSwingIdx = Math.min(4, Math.floor(swingFrame / SWING_DURATION));
+        swingLocalT = (swingFrame - currentSwingIdx * SWING_DURATION) / SWING_DURATION;
+
+        if (currentSwingIdx > lastWhooshSwingIdx) {
+          playWhoosh();
+          lastWhooshSwingIdx = currentSwingIdx;
+        }
+
+        const anchor = swingAnchors[currentSwingIdx];
+        const angle = -SWING_ANGLE_MAX + swingLocalT * 2 * SWING_ANGLE_MAX;
+        charWorldX = anchor.worldX + SWING_ROPE * Math.sin(angle);
+        charWorldY = anchor.worldY + SWING_ROPE * Math.cos(angle);
+        activeAnchorWorld = anchor;
+
+        // Character direction corresponds to swing angle
+        charPose.rotation = angle;
+
+        // Both hands hold the web relative to the body
+        charPose.leftArmAngle = -Math.PI / 2;
+        charPose.rightArmAngle = -Math.PI / 2;
+
+        // Legs curvy bend based on physics
+        const velocityFactor = Math.abs(Math.cos(swingLocalT * Math.PI)); // 1 at middle, 0 at ends
+        const bend = 12 * velocityFactor;
+        charPose.leftLegBend = bend;
+        charPose.rightLegBend = bend;
+        
+        // Legs hang mostly straight down relative to body, but curvy trail
+        charPose.leftLegAngle = Math.PI / 2;
+        charPose.rightLegAngle = Math.PI / 2;
+      } else if (inBackflip) {
+        const t = (f - S4.BACKFLIP_START) / (S4.BACKFLIP_END - S4.BACKFLIP_START);
+        const A5 = swingAnchors[4];
+        const startX = A5.worldX + SWING_ROPE * Math.sin(SWING_ANGLE_MAX);
+        const startY = A5.worldY + SWING_ROPE * Math.cos(SWING_ANGLE_MAX);
+
+        charWorldX = startX + t * 220;
+        charWorldY = startY - Math.sin(t * Math.PI) * 180 + t * t * (452 - startY);
+
+        charPose.rotation = -t * Math.PI * 2;
+
+        let curl = 0;
+        if (t < 0.2) curl = t / 0.2;
+        else if (t < 0.75) curl = 1;
+        else curl = Math.max(0, 1 - (t - 0.75) / 0.25);
+        charPose.curl = curl;
+      } else if (inLanding || inStand || inHold) {
+        const A5 = swingAnchors[4];
+        charWorldX = A5.worldX + SWING_ROPE * Math.sin(SWING_ANGLE_MAX) + 220;
+        charWorldY = 452;
+
+        // Removed crouch completely. Straight standing posture.
+        charPose = {
+          rotation: 0,
+          leftArmAngle: Math.PI / 2,
+          rightArmAngle: Math.PI / 2,
+          leftLegAngle: Math.PI / 2,
+          rightLegAngle: Math.PI / 2
+        };
+      }
+
+      const cameraX = charWorldX - 180;
+
+      // ---- SKY ----
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      skyGrad.addColorStop(0, "#0a0a1a");
+      skyGrad.addColorStop(0.35, "#1a1a3a");
+      skyGrad.addColorStop(0.7, "#3a2a4a");
+      skyGrad.addColorStop(1, "#5a3a4a");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Stars
+      for (let i = 0; i < 40; i++) {
+        const sx = ((i * 137 - cameraX * 0.15) % CANVAS_W + CANVAS_W) % CANVAS_W;
+        const sy = (i * 73) % 200;
+        const tw = Math.sin(f * 0.05 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${tw * 0.7})`;
+        ctx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      // ---- BACKGROUND BUILDINGS (parallax 0.4) ----
+      const bgCameraX = cameraX * 0.4;
+      const bgOffset = ((bgCameraX % BG_SPACING) + BG_SPACING) % BG_SPACING;
+      for (let i = -1; i < Math.ceil(CANVAS_W / BG_SPACING) + 2; i++) {
+        const bx = i * BG_SPACING - bgOffset;
+        const seedIdx = i + Math.floor(bgCameraX / BG_SPACING);
+        const bh = 150 + Math.abs(Math.sin(seedIdx * 2.3)) * 130;
+        const bTopY = GROUND_Y - bh;
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(bx, bTopY, BG_SPACING - 5, bh);
+        ctx.fillStyle = "#0a0a15";
+        ctx.fillRect(bx, bTopY, BG_SPACING - 5, 2);
+        for (let wy = bTopY + 14; wy < GROUND_Y - 12; wy += 18) {
+          for (let wx = bx + 6; wx < bx + BG_SPACING - 11; wx += 12) {
+            const winSeed = (Math.floor(wy) * 5 + Math.floor(wx) * 7 + seedIdx) % 6;
+            if (winSeed < 1) {
+              ctx.fillStyle = "rgba(100, 130, 180, 0.5)";
+              ctx.fillRect(wx, wy, 4, 6);
+            }
+          }
+        }
+      }
+
+      // ---- FOREGROUND BUILDINGS ----
+      const fgOffset = ((cameraX % FG_SPACING) + FG_SPACING) % FG_SPACING;
+      for (let i = -1; i < Math.ceil(CANVAS_W / FG_SPACING) + 2; i++) {
+        const bx = i * FG_SPACING - fgOffset;
+        const seedIdx = i + Math.floor(cameraX / FG_SPACING);
+        const bh = fgBuildingHeight(seedIdx);
+        const bTopY = GROUND_Y - bh;
+        drawBuildingSide(bx, bTopY, FG_SPACING - 8, bh, seedIdx);
+      }
+
+      // ---- GROUND ----
+      ctx.fillStyle = "#0a0a15";
+      ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+      ctx.strokeStyle = "#2a2a4a";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(54, 0);
-      ctx.lineTo(54, canvas.height);
-      ctx.moveTo(canvas.width - 54, 0);
-      ctx.lineTo(canvas.width - 54, canvas.height);
+      ctx.moveTo(0, GROUND_Y); ctx.lineTo(CANVAS_W, GROUND_Y);
       ctx.stroke();
 
-      const spacing = 140;
-      const totalElements = Math.ceil(canvas.height / spacing) + 2;
-      const startY = (scrollOffset % spacing) - spacing;
-
-      for (let i = 0; i < totalElements; i++) {
-        let currentY = startY + (i * spacing);
-
-        ctx.fillStyle = "#1e293b";
-        ctx.fillRect(6, currentY, 42, 110);
-        ctx.strokeStyle = "#334155";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(6, currentY, 42, 110);
-
-        ctx.fillStyle = "#475569";
-        ctx.fillRect(12, currentY + 15, 16, 22);
-        ctx.fillRect(12, currentY + 60, 20, 28);
-
-        ctx.fillStyle = "#64748b";
-        ctx.fillRect(48, currentY + 45, 3, 30);
-        ctx.fillStyle = "#eab308";
+      const gSpacing = 40;
+      const gOffset = ((cameraX % gSpacing) + gSpacing) % gSpacing;
+      for (let gx = -gOffset; gx < CANVAS_W + gSpacing; gx += gSpacing) {
+        ctx.strokeStyle = "rgba(42, 42, 74, 0.7)";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(49, currentY + 45, 4.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(gx, GROUND_Y);
+        ctx.lineTo(gx - 22, CANVAS_H);
+        ctx.stroke();
+      }
 
-        ctx.fillStyle = "#1e293b";
-        ctx.fillRect(canvas.width - 48, currentY + 30, 42, 110);
-        ctx.strokeStyle = "#334155";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(canvas.width - 48, currentY + 30, 42, 110);
+      // ---- TWO-HANDED WEB LINES ----
+      if (activeAnchorWorld) {
+        const anchorScreenX = activeAnchorWorld.worldX - cameraX;
+        const anchorScreenY = activeAnchorWorld.worldY;
 
-        ctx.fillStyle = "#475569";
-        ctx.fillRect(canvas.width - 40, currentY + 45, 18, 24);
-        ctx.fillStyle = "#334155";
-        ctx.fillRect(canvas.width - 42, currentY + 90, 22, 18);
+        const armLen = 16;
+        // Left hand local pos (pointing straight up relative to the tilted body)
+        const handLX = -5 + Math.cos(charPose.leftArmAngle) * armLen;
+        const handLY = -2 + Math.sin(charPose.leftArmAngle) * armLen;
+        // Right hand local pos
+        const handRX = 5 + Math.cos(charPose.rightArmAngle) * armLen;
+        const handRY = -2 + Math.sin(charPose.rightArmAngle) * armLen;
 
-        ctx.fillStyle = "#64748b";
-        ctx.fillRect(canvas.width - 51, currentY + 75, 3, 30);
-        ctx.fillStyle = "#eab308";
+        const cosR = Math.cos(charPose.rotation || 0);
+        const sinR = Math.sin(charPose.rotation || 0);
+
+        // Transform to screen space
+        const handScreenLX = 180 + (handLX * cosR - handLY * sinR);
+        const handScreenLY = charWorldY + (handLX * sinR + handLY * cosR);
+
+        const handScreenRX = 180 + (handRX * cosR - handRY * sinR);
+        const handScreenRY = charWorldY + (handRX * sinR + handRY * cosR);
+
+        // Draw web line from LEFT hand
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(canvas.width - 50, currentY + 75, 4.5, 0, Math.PI * 2);
+        ctx.moveTo(handScreenLX, handScreenLY);
+        ctx.lineTo(anchorScreenX, anchorScreenY);
+        ctx.stroke();
+
+        // Draw web line from RIGHT hand
+        ctx.beginPath();
+        ctx.moveTo(handScreenRX, handScreenRY);
+        ctx.lineTo(anchorScreenX, anchorScreenY);
+        ctx.stroke();
+
+        // Draw the web texture ticks on the left line
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        let ddx = anchorScreenX - handScreenLX;
+        let ddy = anchorScreenY - handScreenLY;
+        for (let i = 1; i < 6; i++) {
+          const frac = i / 6;
+          const mx = handScreenLX + ddx * frac;
+          const my = handScreenLY + ddy * frac;
+          ctx.beginPath(); ctx.moveTo(mx - 2, my - 1); ctx.lineTo(mx + 2, my + 1); ctx.stroke();
+        }
+
+        // Draw the web texture ticks on the right line
+        ddx = anchorScreenX - handScreenRX;
+        ddy = anchorScreenY - handScreenRY;
+        for (let i = 1; i < 6; i++) {
+          const frac = i / 6;
+          const mx = handScreenRX + ddx * frac;
+          const my = handScreenRY + ddy * frac;
+          ctx.beginPath(); ctx.moveTo(mx - 2, my - 1); ctx.lineTo(mx + 2, my + 1); ctx.stroke();
+        }
+
+        // Anchor splat
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(anchorScreenX, anchorScreenY, 2.5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.beginPath();
+        ctx.arc(anchorScreenX, anchorScreenY, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // ---- CHARACTER ----
+      drawSpideySide(180, charWorldY, charPose);
+
+      // ---- LANDING DUST ----
+      if (f >= S4.LANDING_START && f < S4.LANDING_START + 40) {
+        const dt = (f - S4.LANDING_START) / 40;
+        const alpha = 1 - dt;
+        ctx.fillStyle = `rgba(200, 200, 220, ${alpha * 0.7})`;
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          const r = 5 + dt * 50;
+          const px = 180 + Math.cos(a) * r;
+          const py = GROUND_Y + Math.sin(a) * r * 0.3 - 2;
+          ctx.beginPath();
+          ctx.arc(px, py, 4 * (1 - dt), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ---- UNLOCK BURST ----
+      if (inUnlock) {
+        const t = (f - S4.UNLOCK_START) / (S4.UNLOCK_END - S4.UNLOCK_START);
+        const pulse = 0.5 + Math.sin(f * 0.5) * 0.3;
+        const aura = ctx.createRadialGradient(180, charWorldY, 10, 180, charWorldY, 60 + t * 40);
+        aura.addColorStop(0, `rgba(34, 197, 94, ${0.6 * pulse})`);
+        aura.addColorStop(1, "rgba(34, 197, 94, 0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath(); ctx.arc(180, charWorldY, 60 + t * 40, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = `rgba(134, 239, 172, ${1 - t})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(180, charWorldY, 20 + t * 90, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      // ---- STATUS TEXT ----
+      ctx.fillStyle = "rgba(134, 239, 172, 0.95)";
+      ctx.font = "bold 12px monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      if (inFall) ctx.fillText("FALLING...", CANVAS_W / 2, 20);
+      else if (inUnlock) ctx.fillText("SPIDER SENSE!", CANVAS_W / 2, 20);
+      else if (inLanding) ctx.fillText("SUPERHERO LANDING", CANVAS_W / 2, 20);
+      else if (inStand) ctx.fillText("RISING...", CANVAS_W / 2, 20);
+      else if (inHold) ctx.fillText("NAIJA SPIDER", CANVAS_W / 2, 20);
+      // Removed SWING and BACKFLIP texts here
+    }
+
+    function drawTitleCard(f) {
+      const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      grad.addColorStop(0, "#0a0a15"); grad.addColorStop(1, "#0a1a0a");
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = "#0f1f0f";
+      for (let i = 0; i < 12; i++) {
+        const x = i * 32; const h = 40 + Math.sin(i * 2) * 30;
+        ctx.fillRect(x, CANVAS_H - h, 30, h);
+      }
+      for (let i = 0; i < 30; i++) {
+        const sx = (i * 137) % CANVAS_W;
+        const sy = (i * 73) % (CANVAS_H / 2);
+        const tw = Math.sin(f * 0.05 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${tw * 0.7})`;
+        ctx.fillRect(sx, sy, 1.5, 1.5);
+      }
+      const fadeT = Math.min(1, f / 30);
+      const scaleT = 0.7 + Math.min(1, f / 40) * 0.3;
+      ctx.save();
+      ctx.translate(CANVAS_W / 2, CANVAS_H / 2 - 40);
+      ctx.scale(scaleT, scaleT);
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.globalAlpha = fadeT;
+      const glow = ctx.createRadialGradient(0, 0, 20, 0, 0, 200);
+      glow.addColorStop(0, "rgba(34, 197, 94, 0.65)");
+      glow.addColorStop(1, "rgba(34, 197, 94, 0)");
+      ctx.fillStyle = glow; ctx.fillRect(-200, -100, 400, 200);
+      const titleGrad = ctx.createLinearGradient(-100, -40, 100, 40);
+      titleGrad.addColorStop(0, "#15803d");
+      titleGrad.addColorStop(0.5, "#22c55e");
+      titleGrad.addColorStop(1, "#86efac");
+      ctx.shadowColor = "rgba(34, 197, 94, 0.9)"; ctx.shadowBlur = 20;
+      ctx.font = "bold 44px monospace"; ctx.fillStyle = titleGrad;
+      ctx.fillText("NAIJA", 0, -25); ctx.fillText("SPIDER", 0, 25);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(220, 252, 231, 0.7)"; ctx.lineWidth = 1;
+      ctx.strokeText("NAIJA", 0, -25); ctx.strokeText("SPIDER", 0, 25);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      if (f > 30) {
+        const subT = Math.min(1, (f - 30) / 20);
+        ctx.globalAlpha = subT;
+        ctx.fillStyle = "#86efac"; ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("MISSION ACCOMPLISHED", CANVAS_W / 2, CANVAS_H - 80);
+        ctx.globalAlpha = 1;
       }
     }
 
+    // ================= MAIN UPDATE =================
     function update() {
       if (!isPlaying && !isRamming) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+      if (cutsceneActive) { updateOriginCutscene(); return; }
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
       backgroundScroll += gameSpeed;
       drawScenery(backgroundScroll);
-
-      ctx.strokeStyle = "#374151";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#374151"; ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(138, 0);
-      ctx.lineTo(138, canvas.height);
-      ctx.moveTo(222, 0);
-      ctx.lineTo(222, canvas.height);
+      ctx.moveTo(138, 0); ctx.lineTo(138, CANVAS_H);
+      ctx.moveTo(222, 0); ctx.lineTo(222, CANVAS_H);
       ctx.stroke();
-
       const targetX = lanes[currentLane];
-      player.x += (targetX - player.x) * 0.25;
-
+      player.x += (targetX - player.x) * LANE_LERP;
+      if (portalPhase !== "none") {
+        const openEased = 1 - Math.pow(1 - portal.open, 3);
+        drawPortal(portal.x, portal.y, openEased, portal.angle, portalIntensity);
+      }
       if (isRamming) {
-        for (let b of boxes) {
+        for (let b of entities) {
           if (b.type === "low") drawBicycle(b.x, b.y, b.w, b.h);
           else if (b.type === "high") drawBus(b.x, b.y, b.w, b.h);
           else if (b.type === "blocker") drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
           else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
         }
-
         chaser.x += (player.x - chaser.x) * 0.2;
-
         if (ramPhase === "reversing") {
-          chaser.y += 2.5;
-          ramTimer--;
+          chaser.y += 2.5; ramTimer--;
           drawTopDownRunner(player.x, player.y, "running", true, 0);
           drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
-
-          if (ramTimer <= 0) {
-            ramPhase = "boosting";
-          }
+          if (ramTimer <= 0) ramPhase = "boosting";
         } else if (ramPhase === "boosting") {
           chaser.y -= 20;
           drawCar(chaser.x, chaser.y, chaser.width, chaser.height, true);
           drawTopDownRunner(player.x, player.y, "running", true, 0);
-
-          if (chaser.y <= player.y + 15) {
-            ramPhase = "launched";
-            player.vy = -18;
-          }
+          if (chaser.y <= player.y + 15) { ramPhase = "launched"; player.vy = -18; }
         } else if (ramPhase === "launched") {
-          player.y += player.vy;
-          chaser.y += player.vy;
-          
+          player.y += player.vy; chaser.y += player.vy;
           drawTopDownRunner(player.x, player.y, "jumping", true, 0);
           drawCar(chaser.x, chaser.y, chaser.width, chaser.height, true);
-
           if (player.y < -60) {
             isRamming = false;
-            bgMusic.pause(); // Pause music on game over
-            bgMusic.currentTime = 0;
+            bgMusic.pause(); bgMusic.currentTime = 0;
+            const finalD = Math.floor(score / 10);
+            bestOnDeathEl.innerText = saveBestDistance(finalD);
             gameOverScreen.style.display = "flex";
             return;
           }
         }
-
-        animFrameId = requestAnimationFrame(update);
         return;
       }
-
-      if (player.invincibleTimer > 0) {
-        player.invincibleTimer--;
+      if (portalPhase === "none") {
+        const distance = Math.floor(score / 10);
+        if (distance >= PORTAL_DISTANCE - 10) spawnStopped = true;
+        if (distance >= PORTAL_DISTANCE) startPortal();
       }
-
+      if (controlsLocked()) {
+        const fade = portalPhase === "jump" ? Math.max(0, 1 - cutTimer / 25) : 0;
+        if (fade > 0.01) {
+          ctx.globalAlpha = fade;
+          for (let b of entities) {
+            if (b.type === "low") drawBicycle(b.x, b.y, b.w, b.h);
+            else if (b.type === "high") drawBus(b.x, b.y, b.w, b.h);
+            else if (b.type === "blocker") drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
+            else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
+            else if (b.type === "powerup") drawPowerupPickup(b);
+          }
+          ctx.globalAlpha = 1;
+        }
+        runPortalCutscene();
+        return;
+      }
+      if (player.invincibleTimer > 0) player.invincibleTimer--;
+      if (player.magnetTimer > 0) player.magnetTimer--;
+      if (player.coinDoubleTimer > 0) player.coinDoubleTimer--;
+      if (player.pickupFlash > 0) player.pickupFlash--;
       if (player.hits === 1) {
         player.recoveryTimer--;
         if (player.recoveryTimer <= 0) {
-          player.hits = 0;
-          chaser.targetY = 495;
-          dangerEl.innerText = "SAFE";
-          dangerEl.style.color = "#22c55e";
+          player.hits = 0; chaser.targetY = 495;
+          dangerEl.innerText = "SAFE"; dangerEl.style.color = "#22c55e";
         }
       }
-
       chaser.x += (player.x - chaser.x) * 0.15;
       chaser.y += (chaser.targetY - chaser.y) * 0.1;
-
-      if (player.state === "jumping") {
-        player.actionTimer--;
-        if (player.actionTimer <= 0) player.state = "running";
-      } else if (player.state === "sliding") {
-        player.actionTimer--;
-        if (player.actionTimer <= 0) player.state = "running";
+      if (portalPhase === "approach") {
+        portal.angle += portal.spinSpeed;
+        portal.open = Math.min(1, portal.open + 0.02);
+        const remaining = portal.stopY - portal.y;
+        gameSpeed = Math.max(1.5, Math.min(gameSpeed, remaining * 0.06));
+        portal.y = Math.min(portal.stopY, portal.y + gameSpeed);
+        if (portal.stopY - portal.y < 0.5) { portal.y = portal.stopY; beginPortalJump(); }
       }
-
+      if (player.state === "jumping") { player.actionTimer--; if (player.actionTimer <= 0) player.state = "running"; }
+      else if (player.state === "sliding") { player.actionTimer--; if (player.actionTimer <= 0) player.state = "running"; }
       runCycle += 0.22 + (gameSpeed * 0.015);
-
       spawnTimer++;
-      if (spawnTimer > 30) {
+      if (spawnTimer > 30 && !spawnStopped) {
         const roll = Math.random();
-
-        if (roll < 0.55) {
+        if (roll < 0.06) {
+          const rLane = Math.floor(Math.random() * 3);
+          const types = ["shield", "magnet", "coin2x"];
+          const powerType = types[Math.floor(Math.random() * types.length)];
+          entities.push({
+            lane: rLane, x: lanes[rLane], y: -50, w: 28, h: 28,
+            type: "powerup", powerType, bobSeed: Math.random() * Math.PI * 2
+          });
+        } else if (roll < 0.55) {
           const rLane = Math.floor(Math.random() * 3);
           const typeRoll = Math.random();
-          if (typeRoll < 0.45) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 74, h: 30, type: "low" });
-          else if (typeRoll < 0.9) boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 78, h: 44, type: "high" });
-          else boxes.push({ lane: rLane, x: lanes[rLane], y: -50, w: 24, h: 24, type: "coin" });
+          if (typeRoll < 0.45) entities.push({ lane: rLane, x: lanes[rLane], y: -50, w: 74, h: 30, type: "low" });
+          else if (typeRoll < 0.9) entities.push({ lane: rLane, x: lanes[rLane], y: -50, w: 78, h: 44, type: "high" });
+          else entities.push({ lane: rLane, x: lanes[rLane], y: -50, w: 24, h: 24, type: "coin" });
         } else {
-          const isDoubleBlock = Math.random() < 0.5;
-          if (isDoubleBlock) {
+          if (Math.random() < 0.5) {
             const openLane = Math.floor(Math.random() * 3);
             for (let i = 0; i < 3; i++) {
-              if (i !== openLane) {
-                boxes.push({ lane: i, x: lanes[i], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
-              } else if (Math.random() < 0.5) {
-                boxes.push({ lane: i, x: lanes[i], y: -50, w: 24, h: 24, type: "coin" });
-              }
+              if (i !== openLane) entities.push({ lane: i, x: lanes[i], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
+              else if (Math.random() < 0.5) entities.push({ lane: i, x: lanes[i], y: -50, w: 24, h: 24, type: "coin" });
             }
           } else {
             const rLane = Math.floor(Math.random() * 3);
-            boxes.push({ lane: rLane, x: lanes[rLane], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
+            entities.push({ lane: rLane, x: lanes[rLane], y: -60, w: 76, h: 80, type: "blocker", variant: Math.floor(Math.random() * 2) });
           }
         }
         spawnTimer = 0;
       }
-
-      for (let i = boxes.length - 1; i >= 0; i--) {
-        let b = boxes[i];
+      for (let i = entities.length - 1; i >= 0; i--) {
+        const b = entities[i];
         b.y += gameSpeed;
-
-        const hitX = Math.abs(b.x - player.x) < (player.width / 2 + b.w / 2 - 6);
+        let hitX;
+        if (b.type === "coin" && player.magnetTimer > 0) hitX = Math.abs(b.lane - currentLane) <= 1;
+        else hitX = (b.lane === currentLane);
         const hitY = Math.abs(b.y - player.y) < (player.height / 2 + b.h / 2 - 6);
-
         if (hitX && hitY) {
           if (b.type === "coin") {
-            coinCount++;
+            coinCount += player.coinDoubleTimer > 0 ? 2 : 1;
             coinsEl.innerText = coinCount;
-            boxes.splice(i, 1);
-            continue;
+            entities.splice(i, 1); continue;
           }
-
+          if (b.type === "powerup") { applyPowerup(b.powerType); entities.splice(i, 1); continue; }
           const dodgedLow = (b.type === "low" && player.state === "jumping");
           const dodgedHigh = (b.type === "high" && player.state === "sliding");
-          const dodgedBlocker = (b.type === "blocker" && !hitX);
-
-          if (!dodgedLow && !dodgedHigh && !dodgedBlocker && player.invincibleTimer === 0) {
-            boxes.splice(i, 1);
-            handleObstacleHit();
-            if (!isPlaying && !isRamming) return;
-            continue;
+          if (!dodgedLow && !dodgedHigh && player.invincibleTimer === 0) {
+            entities.splice(i, 1); handleObstacleHit(); continue;
           }
         }
-
-        if (b.y > canvas.height + 70) {
-          boxes.splice(i, 1);
-        }
+        if (b.y > CANVAS_H + 70) entities.splice(i, 1);
       }
-
-      for (let i = 0; i < boxes.length; i++) {
-        let b = boxes[i];
-        if (b.type === "low") {
-          drawBicycle(b.x, b.y, b.w, b.h);
-        } else if (b.type === "blocker") {
-          drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
-        } else if (b.type === "coin") {
-          drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
-        }
+      for (const b of entities) {
+        if (b.type === "low") drawBicycle(b.x, b.y, b.w, b.h);
+        else if (b.type === "blocker") drawRooftopBuilding(b.x, b.y, b.w, b.h, b.variant);
+        else if (b.type === "coin") drawBox(b.x, b.y, b.w, b.h, "#06b6d4", "#cffafe");
+        else if (b.type === "powerup") drawPowerupPickup(b);
       }
-
-      drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle);
+      if (player.pickupFlash > 0) {
+        const alpha = player.pickupFlash / 20;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(player.x, player.y, 34 + (1 - alpha) * 22, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (player.shield) {
+        const pulse = 0.7 + Math.sin(performance.now() / 200) * 0.15;
+        ctx.strokeStyle = `rgba(103, 232, 249, ${pulse})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(player.x, player.y, 30, 0, Math.PI * 2); ctx.stroke();
+      }
+      let jumpLift = 0;
+      if (player.state === "jumping") {
+        const t = Math.max(0, Math.min(1, 1 - player.actionTimer / JUMP_DURATION));
+        jumpLift = Math.sin(t * Math.PI) * 14;
+      }
+      drawTopDownRunner(player.x, player.y, player.state, player.invincibleTimer > 0, runCycle, jumpLift);
       drawCar(chaser.x, chaser.y, chaser.width, chaser.height, false);
-
-      for (let i = 0; i < boxes.length; i++) {
-        let b = boxes[i];
-        if (b.type === "high") {
-          drawBus(b.x, b.y, b.w, b.h);
-        }
+      for (const b of entities) { if (b.type === "high") drawBus(b.x, b.y, b.w, b.h); }
+      drawActivePowerups();
+      if (portalPhase === "none") {
+        score++; scoreEl.innerText = Math.floor(score / 10);
+        gameSpeed = 5 + Math.floor(score / 600);
       }
-
-      score++;
-      scoreEl.innerText = Math.floor(score / 10);
-      gameSpeed = 5 + Math.floor(score / 600);
-
-      animFrameId = requestAnimationFrame(update);
     }
 
     function handleObstacleHit() {
+      if (player.shield) {
+        player.shield = false;
+        player.invincibleTimer = 50;
+        player.pickupFlash = 15;
+        return;
+      }
       player.hits++;
       player.invincibleTimer = 45;
-
       if (player.hits === 1) {
-        chaser.targetY = 448;
-        player.recoveryTimer = 300;
-        dangerEl.innerText = "CLOSE!";
-        dangerEl.style.color = "#ef4444";
+        chaser.targetY = 448; player.recoveryTimer = 300;
+        dangerEl.innerText = "CLOSE!"; dangerEl.style.color = "#ef4444";
       } else if (player.hits >= 2) {
-        isPlaying = false;
-        isRamming = true;
-        ramPhase = "reversing";
-        ramTimer = 22;
+        isPlaying = false; isRamming = true;
+        ramPhase = "reversing"; ramTimer = 22;
       }
     }
+
+    const STEP = 1000 / 60;
+    let accumulator = 0;
+    let lastTimestamp = performance.now();
+    function loop(timestamp) {
+      accumulator += Math.min(timestamp - lastTimestamp, 200);
+      lastTimestamp = timestamp;
+      let steps = 0;
+      while (accumulator >= STEP && steps < 5) {
+        update();
+        accumulator -= STEP;
+        steps++;
+        if (!isPlaying && !isRamming) break;
+      }
+      animFrameId = requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>
